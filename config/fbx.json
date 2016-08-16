@@ -1,0 +1,63 @@
+{
+"config":
+    {
+    "referenceFbx":"/home/daveotte/work/mocap_animations/01/01_02.fbx"
+    }, 
+"fbxGroups":
+        [
+            {
+                "name":"communicationA",
+                "index":0,
+                "searchDir":"/home/daveotte/work/mocap_animations/18"
+            },
+            {
+                "name":"communicationB",
+                "index":1,
+                "searchDir":"/home/daveotte/work/mocap_animations/19"
+            },
+            {
+                "name":"interactionPlayA",
+                "index":2,
+                "searchDir":"/home/daveotte/work/mocap_animations/20"
+            },        
+            {
+                "name":"interactionPlayB",
+                "index":3,
+                "searchDir":"/home/daveotte/work/mocap_animations/21"
+            },          
+            {
+                "name":"interactionA",
+                "index":4,
+                "searchDir":"/home/daveotte/work/mocap_animations/22"
+            },             
+            {
+                "name":"interactionB",
+                "index":5,
+                "searchDir":"/home/daveotte/work/mocap_animations/23"
+            }
+
+        ],
+       
+"actions":
+    [
+        {
+            "name":"aPose",
+            "startValue":100, 
+            "endValue":0,
+            "duration":10,
+            "curveName":"CFX_Runup",
+            "trackName":"blend",
+            "uiName":"A-Pose"
+        },
+        {
+            "name":"deflate",
+            "startValue":0, 
+            "endValue":-100,
+            "duration":10,
+            "curveName":"M_Deflate",
+            "trackName":"blend",
+            "uiName":"Shrink"
+        }
+        
+    ]
+}
