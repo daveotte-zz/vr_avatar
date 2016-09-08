@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 from jsonConfig import jsonFile
 
@@ -15,63 +16,68 @@ class dataManager(object):
         #use jsonConfig module hack to get json config file
         jsonFileObj = jsonFile()
         jsonFilePath = jsonFileObj.getJsonFile()
-        self.data = json.loads(open(jsonFilePath).read())
-        
-        #encapsulate fbxs json data into fbx objects
-        self.dataObjects = []
-        for d in self.data[dataType]:
-            self.dataObjects.append(fbxData(d))
-                            
-    def getObjByName(self,name): 
+        self.jsonNodes = json.loads(open(jsonFilePath).read())
+
+    def getObjByName(self, name): 
         for obj in self.dataObjects:
             if name == obj.name:
                 return obj
         return None
 
-    def getObject(self,objectIndexOrName):
+    def getObject(self, objectIndexOrName):
         if type(objectIndexOrName) == int:
             return self.getObjByIndex(objectIndexOrName)
         else:
             return self.getObjByName(objectIndexOrName)
             
-    def getObjByIndex(self,index): 
+    def getObjByIndex(self, index): 
         for obj in self.dataObjects:
             if index == obj.index:
                 return obj
         return None
 
-class fbxData(object):
+
+
+class fbxManager(dataManager):
+    
+    def __init__(self, dataType):
+        dataManager.__init__(self, dataType) 
+
+        #encapsulate fbxs json data into fbx objects
+        self.dataObjects = self.getObjects(self.jsonNodes[dataType])
+
+    def getObjects(self, jsonNodes):
+        dataObjects = []
+        for d in jsonNodes:
+            dataObj = fbxData(d)
+            if dataObj.name == "config":
+                self.config = dataObj
+            else:
+                dataObjects.append(dataObj)   
+        return dataObjects   
+
+class baseData (object):
+    def __init__(self, jsonNode):
+        self.__dict__ = jsonNode
+
+
+class fbxData(baseData):
     """
     Make object behave like a dictionary.
     """
-    def __init__(self, data):
-        self.__dict__ = data
+    def __init__(self, jsonNode):
+        baseData.__init__(self, jsonNode)
+        self.fbxFiles = self.getFbxFiles()
 
-class fbxManager(dataManager):
-    """
-    Initalize class with json file containing data on all available anim fbxs.
-    Makes it easy to get anim fbx data, and keep track of current fbx while
-    the program runs. Use an instance of this object to initialize timeManger.
-    """
-    def __init__(self, dataType):
-        dataManager.__init__(self, dataType)        
-        #set the 'current fbx' as specified in the json config file
-        self.setCurrentFbx(self.data['config']['referenceFbx'])
-        self.config = self.data['config']
-        
-    def setCurrentFbx(self,indexOrName):
-        self.currentFbx = self.getObject(indexOrName)
-        return None
+    def getFbxFiles(self):
+        files = []
+        if hasattr(self, 'dir'):
+            for f in os.listdir(self.dir):
+                if f.endswith('.fbx'):
+                    files.append(self.dir+'/'+f)
+        return files
 
-   
 
-class nnManager(object):
-    """
-    Manage NN construction based on json configuration.
-    """
-    def __init__(self, fbxManager):
- 
-        self.fm = fbxManager
         
 
 

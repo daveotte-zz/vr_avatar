@@ -8,8 +8,8 @@ from keras.layers import Dense, Activation
 import site
 
 
-for i in (sys.path):
-	print i
+#for i in (sys.path):
+#	print i
 
 #import DisplayGlobalSettings
 
