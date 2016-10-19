@@ -8,34 +8,51 @@
             },
             {
                 "name":"communicationA",
-                "index":0,
-                "dir":"/home/daveotte/work/mocap_animations/18"
+                "index":18,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/18/FBX_2013"
             },
             {
                 "name":"communicationB",
-                "index":1,
-                "dir":"/home/daveotte/work/mocap_animations/19"
+                "index":19,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/19/FBX_2013"
             },
             {
                 "name":"interactionPlayA",
-                "index":2,
-                "dir":"/home/daveotte/work/mocap_animations/20"
+                "index":20,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/20/FBX_2013"
             },        
             {
                 "name":"interactionPlayB",
-                "index":3,
-                "dir":"/home/daveotte/work/mocap_animations/21"
+                "index":21,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/21/FBX_2013"
             },          
             {
                 "name":"interactionA",
-                "index":4,
-                "dir":"/home/daveotte/work/mocap_animations/22"
+                "index":22,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/22/FBX_2013"
             },             
             {
                 "name":"interactionB",
-                "index":5,
-                "dir":"/home/daveotte/work/mocap_animations/23"
+                "index":23,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/23/FBX_2013"
             }
 
-        ]
+        ],
+    "nnDataConfigurations":
+        [
+            {
+                "name":"predictHip",
+                "fbxGroups":[22,23],
+                "input":
+                        {   
+                            "rHand":["pos","rot"],
+                            "lHand":["pos","rot"],
+                            "head":["pos","rot"]
+                        },
+                "output":
+                        {   
+                            "hip":["pos","rot"]
+                        }
+            }
+        ]   
 }
