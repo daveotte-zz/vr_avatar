@@ -55,30 +55,71 @@ class fbxScene(object):
         self.animEval = self.lScene.GetAnimationEvaluator()
 
     def getIndexDict(self):
+        """
+        Create dictionary lookup table with joint name 
+        as keys, and index number by value
+        """
         indexDict = {}
         for i in range(self.lScene.GetNodeCount()):
             indexDict[self.lScene.GetNode(i).GetName()]=i
         return indexDict
 
-    def getNode(self,nodeName):
-        return self.lScene.GetNode(self.indexDict[nodeName])
+    def getNodeIndexByName(self,jointName):
+        return self.getIndexDict()[jointName]
+
+    def getNode(self,jointName):
+        """
+        Return FbxNode by joint name.
+        """
+        return self.lScene.GetNode(self.getNodeIndexByName(jointName))
 
     def getGlobalTransform(self, jointName, time=0):
+        """
+        Return transform of specificied joint node,
+        at the specified time.
+        """
         self.time.SetFrame(time)
-        matrix = self.animEval.GetNodeGlobalTransform(self.getNode(jointName),self.time)
-        return matrix
+        return self.animEval.GetNodeGlobalTransform(self.getNode(jointName),self.time)
+ 
+    def getLocalTransform(self, jointName, time=0):
+        self.time.SetFrame(time)
+        return self.animEval.GetNodeLocalTransform(self.getNode(jointName),self.time)
 
     def getGlobalPos(self,jointName,time=0):
         """
-        Return a list of 3 numbers to represent position component
+        Return a list of 3 numbers to represent local position component
         of given matrix.
         """
+        return self.v4Tov3(self.getGlobalTransform(jointName,time).GetRow(3))
+
+    def getLocalPos(self,jointName,time=0):
+        """
+        Return a list of 3 numbers to represent global position component
+        of given matrix.
+        """
+        return self.v4Tov3(self.getLocalTransform(jointName,time).GetRow(3))
+ 
+    def getGlobalRot(self,jointName,time=0):
+        """
+        Return a list of 9 numbers to represent global Mx3 rotation extracted
+        from joint's global Mx4 transform.
+        """
+        return self.extractRotAsList(self.getLocalTransform(jointName,time))
+
+    def extractRotAsList(self, mx4):
+        """
+        Extract rot/scale from mx4 as list of 9 numbers.
+        """
+        return  self.v4Tov3(mx4.GetRow(0)) + \
+                self.v4Tov3(mx4.GetRow(1)) + \
+                self.v4Tov3(mx4.GetRow(2))
+
+    def v4Tov3 (self,v4):
         v3=[]
-        v4 = self.getGlobalTransform(jointName,time).GetRow(3)
         v3.append(v4[0])
         v3.append(v4[1])
-        v3.append(v4[2])
-        return v3
+        v3.append(v4[2]) 
+        return v3      
 
     def getStartTime(self):
         return self.startTime
@@ -188,14 +229,27 @@ class fbxManager(dataManager):
             for scene in g.getFbxScenes():
                 for frame in range(scene.startTime,scene.endTime+1):
                     line = []
-                    for jointName in nnConfigObj.input.keys():
-                        print "fbxGroup: %s fbxScene: %s frame: %s joint: %s" % \
-                                    (fbxGroupName,scene.fileName,int(frame),jointName)
-                        for transform in nnConfigObj.input[jointName]:
-                            if transform == "pos":
-                                line = line + list(scene.getGlobalPos(jointName,frame))
-                            #if transform == "rot":
-                            #    line = line + [1,2,3]
+                    for jointDataList in nnConfigObj.input:
+                        print "fbxGroup: %s fbxScene: %s frame: %s joint: %s transformPart: %s space: %s" % \
+                                    (fbxGroupName,scene.fileName,int(frame),jointDataList[0],\
+                                    jointDataList[1],jointDataList[2])
+                        
+                        #each jointName returns a list with elem 0 as transform component
+                        #type (ie. position or rotation), and elem 1 specifies global or
+                        #local offset from parent
+                        if jointDataList[1]=="pos":
+
+                            if jointDataList[2]=="world":
+                                line = line + list(scene.getGlobalPos(jointDataList[0],frame))
+                            elif jointDataList[2]=="local":
+                                line = line + list(scene.getLocalPos(jointDataList[0],frame))
+                        
+                        elif jointDataList[1]=="rot":
+                            if jointDataList[2]=="world":
+                                line = line + list(scene.getGlobalRot(jointDataList[0],frame))
+                            elif jointDataList[2]=="local":
+                                line = line + list(scene.getLocalRot(jointDataList[0],frame))
+
                     #convert line array to string. 
                     lineArray.append(', '.join(str(l) for l in line))
         

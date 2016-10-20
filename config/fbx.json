@@ -48,28 +48,33 @@
                 "name":"predictHip",
                 "fbxGroups":[22,23],
                 "input":
-                        {   
-                            "rHand":["pos","rot"],
-                            "lHand":["pos","rot"],
-                            "head":["pos","rot"]
-                        },
+                        [   
+                            ["rHand", "pos", "world"],
+                            ["rHand", "rot", "world"],
+                            ["lHand", "pos", "world"],
+                            ["lHand", "rot", "world"]                   
+                        ],
                 "output":
-                        {   
-                            "hip":["pos","rot"]
-                        },
+                        [
+                            ["hip", "pos", "world"],
+                            ["hip", "rot", "world"]                     
+                        ],
                 "timeMode":24
             },
             {
                 "name":"test",
                 "fbxGroups":[0],
                 "input":
-                        {   
-                            "rFoot":["pos","rot"]
-                        },
+                        [   
+                            ["rFoot", "pos", "world"],
+                            ["rFoot", "rot", "world"]                   
+                        ],
                 "output":
-                        {   
-                            "hip":["pos","rot"]
-                        },
+                        [
+                            ["hip", "pos", "local"],
+                            ["hip", "rot", "local"]                     
+                        ],
+                        
                 "timeMode":24
             }
 
