@@ -12,9 +12,9 @@ def initializeNN():
 
     fbxManager = data.fbxManager('fbxGroups')
     nnDataConfigurations = data.nnDataConfigurations('nnDataConfigurations')
-    nnDataObj = fbxManager.getNnDataObj(nnDataConfigurations.getObject('predictHip'))
-    nnDataObj.printData()
-    
+    nnDataObj = fbxManager.getNnDataObj(nnDataConfigurations.getObject('test'))
+    nnDataObj.write('/home/daveotte/work/output.csv')
+    #nnDataObj.printData()
     '''
     fbxObj = fbxManager.getObject(23)
     for f in fbxObj.getFbxFiles():

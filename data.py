@@ -36,8 +36,13 @@ class fbxScene(object):
         self.time = FbxTime()
         self.lSdkManager, self.lScene = InitializeSdkObjects()
         lResult = LoadScene(self.lSdkManager, self.lScene, self.fileName)
-        lGlobalSettings = self.lScene.GetGlobalSettings()
-        lTs = lGlobalSettings.GetTimelineDefaultTimeSpan()
+        lAnimStack = self.lScene.GetSrcObject(FbxAnimStack.ClassId, 0)
+        
+        #set fps to 24, even though these fbx files are at 30.
+        #I'm doing this since Blender and Maya default to 24
+        self.time.SetGlobalTimeMode(11)       
+        lTs = lAnimStack.GetLocalTimeSpan()
+
         lStart = lTs.GetStart()
         lEnd   = lTs.GetStop()
         lTmpStr=""
@@ -45,8 +50,9 @@ class fbxScene(object):
         self.endTime = int(str(lEnd.GetTimeString(lTmpStr, 10).replace('*','')))
 
         self.indexDict = self.getIndexDict()
+        #print str(self.startTime) + " " + str(self.endTime)
 
-
+        self.animEval = self.lScene.GetAnimationEvaluator()
 
     def getIndexDict(self):
         indexDict = {}
@@ -57,10 +63,22 @@ class fbxScene(object):
     def getNode(self,nodeName):
         return self.lScene.GetNode(self.indexDict[nodeName])
 
-    def getGlobalTranslation(self, jointName, time=0):
-        fbxNode = self.getNode(jointName)
-        self.time.Set(time)
-        return self.getNode(jointName).EvaluateGlobalTransform(self.time).GetRow(3)
+    def getGlobalTransform(self, jointName, time=0):
+        self.time.SetFrame(time)
+        matrix = self.animEval.GetNodeGlobalTransform(self.getNode(jointName),self.time)
+        return matrix
+
+    def getGlobalPos(self,jointName,time=0):
+        """
+        Return a list of 3 numbers to represent position component
+        of given matrix.
+        """
+        v3=[]
+        v4 = self.getGlobalTransform(jointName,time).GetRow(3)
+        v3.append(v4[0])
+        v3.append(v4[1])
+        v3.append(v4[2])
+        return v3
 
     def getStartTime(self):
         return self.startTime
@@ -146,8 +164,10 @@ class nnData(object):
     def __init__(self,lineArray):
         self.lineArray = lineArray
 
-    def writeDataFile(self,filePath):
-        pass
+    def write(self,filePath):
+        dataFile = open(filePath,'w')
+        for l in self.lineArray:
+            dataFile.write("%s\n" % l)
 
     def printData(self):
         for l in self.lineArray:
@@ -166,16 +186,16 @@ class fbxManager(dataManager):
         for fbxGroupName in nnConfigObj.fbxGroups:
             g = self.getObject(fbxGroupName)
             for scene in g.getFbxScenes():
-                for frame in range(scene.startTime,scene.endTime):
+                for frame in range(scene.startTime,scene.endTime+1):
                     line = []
                     for jointName in nnConfigObj.input.keys():
                         print "fbxGroup: %s fbxScene: %s frame: %s joint: %s" % \
                                     (fbxGroupName,scene.fileName,int(frame),jointName)
                         for transform in nnConfigObj.input[jointName]:
                             if transform == "pos":
-                                line = line + list(scene.getGlobalTranslation(jointName,frame))
-                            if transform == "rot":
-                                line = line + [1,2,3]
+                                line = line + list(scene.getGlobalPos(jointName,frame))
+                            #if transform == "rot":
+                            #    line = line + [1,2,3]
                     #convert line array to string. 
                     lineArray.append(', '.join(str(l) for l in line))
         

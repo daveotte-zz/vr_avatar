@@ -35,8 +35,12 @@
                 "name":"interactionB",
                 "index":23,
                 "dir":"/home/daveotte/work/mocap_animations_with_binary/23/FBX_2013"
+            },             
+            {
+                "name":"test",
+                "index":0,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/test"
             }
-
         ],
     "nnDataConfigurations":
         [
@@ -52,7 +56,22 @@
                 "output":
                         {   
                             "hip":["pos","rot"]
-                        }
+                        },
+                "timeMode":24
+            },
+            {
+                "name":"test",
+                "fbxGroups":[0],
+                "input":
+                        {   
+                            "rFoot":["pos","rot"]
+                        },
+                "output":
+                        {   
+                            "hip":["pos","rot"]
+                        },
+                "timeMode":24
             }
+
         ]   
 }
