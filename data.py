@@ -104,6 +104,13 @@ class fbxScene(object):
         Return a list of 9 numbers to represent global Mx3 rotation extracted
         from joint's global Mx4 transform.
         """
+        return self.extractRotAsList(self.getGlobalTransform(jointName,time))
+ 
+    def getLocalRot(self,jointName,time=0):
+        """
+        Return a list of 9 numbers to represent global Mx3 rotation extracted
+        from joint's global Mx4 transform.
+        """
         return self.extractRotAsList(self.getLocalTransform(jointName,time))
 
     def extractRotAsList(self, mx4):
@@ -166,7 +173,7 @@ class dataManager(object):
         jsonFilePath = jsonFileObj.getJsonFile()
         self.jsonNodes = json.loads(open(jsonFilePath).read())
         #encapsulate fbxs json data into fbx objects
-        self.dataObjects = self.getObjects(self.jsonNodes[dataType])
+        
 
 
     def getObjByName(self, name): 
@@ -187,6 +194,52 @@ class dataManager(object):
                 return obj
         return None
 
+
+
+class nnData(object):
+    """
+    Container for nn data.
+    """
+    def __init__(self):
+        self.lineArray      = []
+        self.inputStart     = 0
+        self.inputEnd       = 0
+        self.outputStart    = 0
+        self.outputEnd      = 0
+
+    def write(self,filePath):
+        dataFile = open(filePath,'w')
+        for l in self.lineArray:
+            dataFile.write("%s\n" % l)
+        self.file = filePath
+
+    def printData(self):
+        for l in self.lineArray:
+            print l
+
+    def setData(self, lineArray):
+        self.lineArray = lineArray
+
+    def getInputStart(self):
+        return self.inputStart
+
+    def getInputEnd(self):
+        return self.inputEnd
+
+    def getOutputStart(self):
+        return self.outputStart
+
+    def getOutputEnd(self):
+        return self.outputEnd
+
+class fbxManager(dataManager):
+    """
+    Manages fbx groups, for organized directories of fbx files.
+    """
+    def __init__(self, dataType):
+        dataManager.__init__(self, dataType) 
+        self.dataObjects = self.getObjects(self.jsonNodes[dataType])
+
     def getObjects(self, jsonNodes):
         dataObjects = []
         for d in jsonNodes:
@@ -197,65 +250,68 @@ class dataManager(object):
                 dataObjects.append(dataObj)   
         return dataObjects   
 
-
-class nnData(object):
-    """
-    Container for nn data.
-    """
-    def __init__(self,lineArray):
-        self.lineArray = lineArray
-
-    def write(self,filePath):
-        dataFile = open(filePath,'w')
-        for l in self.lineArray:
-            dataFile.write("%s\n" % l)
-
-    def printData(self):
-        for l in self.lineArray:
-            print l
-
-
-class fbxManager(dataManager):
-    """
-    Manages fbx groups, for organized directories of fbx files.
-    """
-    def __init__(self, dataType):
-        dataManager.__init__(self, dataType) 
-
     def getNnDataObj(self,nnConfigObj):
         lineArray = []
+        nnDataObj = nnData()
         for fbxGroupName in nnConfigObj.fbxGroups:
             g = self.getObject(fbxGroupName)
             for scene in g.getFbxScenes():
                 for frame in range(scene.startTime,scene.endTime+1):
-                    line = []
-                    for jointDataList in nnConfigObj.input:
-                        print "fbxGroup: %s fbxScene: %s frame: %s joint: %s transformPart: %s space: %s" % \
-                                    (fbxGroupName,scene.fileName,int(frame),jointDataList[0],\
-                                    jointDataList[1],jointDataList[2])
-                        
-                        #each jointName returns a list with elem 0 as transform component
-                        #type (ie. position or rotation), and elem 1 specifies global or
-                        #local offset from parent
-                        if jointDataList[1]=="pos":
-
-                            if jointDataList[2]=="world":
-                                line = line + list(scene.getGlobalPos(jointDataList[0],frame))
-                            elif jointDataList[2]=="local":
-                                line = line + list(scene.getLocalPos(jointDataList[0],frame))
-                        
-                        elif jointDataList[1]=="rot":
-                            if jointDataList[2]=="world":
-                                line = line + list(scene.getGlobalRot(jointDataList[0],frame))
-                            elif jointDataList[2]=="local":
-                                line = line + list(scene.getLocalRot(jointDataList[0],frame))
-
-                    #convert line array to string. 
+                    inputLinePortion  = self.getJointDatAtFrame(nnConfigObj.input,fbxGroupName,scene,int(frame))
+                    outputLinePortion = self.getJointDatAtFrame(nnConfigObj.output,fbxGroupName,scene,int(frame))
+                    line = inputLinePortion + outputLinePortion
+                    #convert line to string. 
                     lineArray.append(', '.join(str(l) for l in line))
-        
-                    
-        #return nnData(['a','b'])
-        return nnData(lineArray)
+        nnDataObj.inputEnd = len(inputLinePortion)-1
+        nnDataObj.outputStart = nnDataObj.inputEnd  
+        nnDataObj.outputEnd = nnDataObj.outputStart + len(outputLinePortion)            
+        nnDataObj.setData(lineArray)            
+        return nnDataObj
+
+    def getJointDatAtFrame(self,nnConfigList, fbxGroupName, scene, frame):
+        line = []
+        for jointDataList in nnConfigList:
+            print "fbxGroup: %s fbxScene: %s frame: %s joint: %s transformPart: %s space: %s" % \
+                        (fbxGroupName,scene.fileName,frame,jointDataList[0],\
+                        jointDataList[1],jointDataList[2])
+            
+            #each jointName returns a list with elem 0 as transform component
+            #type (ie. position or rotation), and elem 1 specifies global or
+            #local offset from parent
+            if jointDataList[1]=="pos":
+                if jointDataList[2]=="world":
+                    line = line + list(scene.getGlobalPos(jointDataList[0],frame))
+                elif jointDataList[2]=="local":
+                    line = line + list(scene.getLocalPos(jointDataList[0],frame))
+            
+            elif jointDataList[1]=="rot":
+                if jointDataList[2]=="world":
+                    line = line + list(scene.getGlobalRot(jointDataList[0],frame))
+                elif jointDataList[2]=="local":
+                    line = line + list(scene.getLocalRot(jointDataList[0],frame))
+        return line
+
+
+
+
+class nnConfigData(baseData):
+    """
+    Turns json dict into this object's attributes.
+    """
+    def __init__(self, jsonNode):
+        baseData.__init__(self, jsonNode)
+        self.inputStart = 0
+        self.inputEnd = self.getInputCount()-1
+        self.outputStart = self.inputEnd
+        self.outputEnd = self.getInputCount() + self.getOutputCount()-1
+        self.inputAndOutput = self.input + self.output
+
+    def getInputCount(self):
+        return len(self.input)
+
+    def getOutputCount(self):
+        return len(self.output)
+
 
 
 class nnDataConfigurations(dataManager):
@@ -264,8 +320,19 @@ class nnDataConfigurations(dataManager):
     """
     def __init__(self, dataType):
         dataManager.__init__(self, dataType)
+        self.dataObjects = self.getObjects(self.jsonNodes[dataType])
 
-        
+    def getObjects(self, jsonNodes):
+        dataObjects = []
+        for d in jsonNodes:
+            dataObj = nnConfigData(d)
+            if dataObj.name == "config":
+                self.config = dataObj
+            else:
+                dataObjects.append(dataObj)   
+        return dataObjects   
+
+
 
 
 
