@@ -1,52 +1,66 @@
 
+
 import sys
-import os
 import data
 from keras.models import Sequential
 from keras.layers import Dense
 import keras.optimizers
 import numpy
+from keras.layers.normalization import BatchNormalization
 
 # Initialize the script plug-in
 def initializeNN():
 
-    
+    #all the data t I could work with
+    #given a nnDataConfig object, processes data...return nnDataObj
     fbxManager = data.fbxManager('fbxGroups')
+
+    #all the different nn configurations
     nnDataConfigurations = data.nnDataConfigurations('nnDataConfigurations')
-    nnDataObj = fbxManager.getNnDataObj(nnDataConfigurations.getObject('predictHip'))
+    
+    #a particular configuration(the stuff I want to work with)
+    nnDataConfigObj = nnDataConfigurations.getObject('predictHandfromForeArm')
+
+    #fbxManager uses the nnDataConfigObj to process the data and generate the nnDataObj
+    nnDataObj = fbxManager.getNnDataObj(nnDataConfigObj)
+
+    #nnDataObj can write out the data, or return a np array
     nnDataObj.write('/home/daveotte/work/output.csv')
-    #nnDataObj.printData()
     print "inputStart: %d, inputEnd: %d, outputStart: %d, outputEnd: %d" % \
                                 (nnDataObj.inputStart,
                                  nnDataObj.inputEnd,  
                                  nnDataObj.outputStart,
                                  nnDataObj.outputEnd)
     
+
+
     # fix random seed for reproducibility
     seed = 7
     numpy.random.seed(seed)
-
-    dataset = numpy.loadtxt("/home/daveotte/work/output.csv", delimiter=",")
+    dataArray =  nnDataObj.getData()
+    
+    dataSet = numpy.array(dataArray)
+    
     # split into input (X) and output (Y) variables
-    X = dataset[:,nnDataObj.inputStart:nnDataObj.inputEnd]
-    Y = dataset[:,nnDataObj.outputStart:nnDataObj.outputEnd]
-    #X = dataset[:,0:11]
-    #Y = dataset[:,11:23]
-
+    X = dataSet[:,nnDataObj.inputStart:nnDataObj.inputEnd]
+    Y = dataSet[:,nnDataObj.outputStart:nnDataObj.outputEnd]
+    #X = dataSet[:,0:3]
+    #Y = dataSet[:,3:15]
+    
     model = Sequential()
 
     inputDim = nnDataObj.inputEnd
     outputDim = (nnDataObj.outputEnd-nnDataObj.outputStart)
-    print inputDim
-    print outputDim
+
     #Dense:fully connected- arg1:number of nodes, input_dim(eq to number of input nodes
     #init:initialize network weights <default is 0 and .05), activation (type of function,
     # in this case, rectifier (relu) and sigmoid (s shaped)
-    model.add(Dense(2303, input_dim=inputDim, init='normal', activation='relu'))
-    model.add(Dense(4608, init='normal', activation='relu'))
-    model.add(Dense(4608, init='normal', activation='relu'))
-    model.add(Dense(outputDim, init='normal', activation='sigmoid'))
-
+    
+    model.add(Dense(inputDim, input_dim=inputDim, init='normal', activation='relu'))
+    #model.add(BatchNormalization())
+    model.add(Dense(inputDim*50, init='normal', activation='relu'))
+    model.add(Dense(outputDim*50, init='normal', activation='relu'))
+    model.add(Dense(outputDim, init='normal', activation='linear'))
 
     #this python is an interface to the theano or TensorFlow "backend"... this
     #thing that really runs. It automatically knows how to optimize itself for
@@ -64,10 +78,10 @@ def initializeNN():
     #number of interations (or epochs using nb_epoch)
     #set number of itertaions that happen before adjusting the weights (batch_size)
     
-    model.fit(X,Y, nb_epoch=30, batch_size=1)
-
+    model.fit(X,Y, nb_epoch=100, batch_size=1)
 
     '''
+    
     #testSet = numpy.loadtxt("/work/chartd/users/daveotte/cpp/raytracer/render_data.txt", delimiter=",")
     #X = testSet[:,0:9]
     dataset = numpy.loadtxt("/work/rd/users/daveotte/machine_learning/raytracer/v4/test_data/test_data.txt", delimiter=",")

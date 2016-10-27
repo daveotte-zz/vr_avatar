@@ -1,10 +1,13 @@
-import sys
+#import sys
 import os
 import json
 from jsonConfig import jsonFile
 import site
-
+import random
 import sys
+import matrixUtil as mx
+import operations as op
+
 sys.path.append('/usr/local/lib/python2.7/site-packages/ImportScene')
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
@@ -24,7 +27,6 @@ from DisplayPose            import DisplayPose
 from DisplayAnimation       import DisplayAnimation
 from DisplayGenericInfo     import DisplayGenericInfo
 
-
 from FbxCommon import *
 
 """
@@ -33,6 +35,8 @@ Library to work with fbx data.
 class fbxScene(object):
     def __init__(self, fileName):
         self.fileName = fileName
+
+    def initialize(self):
         self.time = FbxTime()
         self.lSdkManager, self.lScene = InitializeSdkObjects()
         lResult = LoadScene(self.lSdkManager, self.lScene, self.fileName)
@@ -45,7 +49,7 @@ class fbxScene(object):
 
         lStart = lTs.GetStart()
         lEnd   = lTs.GetStop()
-        lTmpStr=""
+        lTmpStr="frank"
         self.startTime = int(str(lStart.GetTimeString(lTmpStr, 10).replace('*','')))
         self.endTime = int(str(lEnd.GetTimeString(lTmpStr, 10).replace('*','')))
 
@@ -72,6 +76,12 @@ class fbxScene(object):
         Return FbxNode by joint name.
         """
         return self.lScene.GetNode(self.getNodeIndexByName(jointName))
+
+    def getNpGlobalTransform(self, jointName, time=0):
+        return mx.fbxMxtoNumpyMx(self.getGlobalTransform(jointName,time))
+
+    def getNpLocalTransform(self, jointName, time=0):
+        return mx.fbxMxtoNumpyMx(self.getLocalTransform(jointName,time))
 
     def getGlobalTransform(self, jointName, time=0):
         """
@@ -134,6 +144,9 @@ class fbxScene(object):
     def getEndTime(self):
         return self.endTime
 
+    def destroy(self):
+        self.lSdkManager.Destroy()
+
 class baseData (object):
     def __init__(self, jsonNode):
         self.__dict__ = jsonNode
@@ -147,6 +160,10 @@ class fbxData(baseData):
         baseData.__init__(self, jsonNode)
         self.fbxFiles = self.getFbxFiles()
         self.fbxScenes = self.getFbxScenes()
+
+    def destroy(self):
+        for scene in self.fbxScenes:
+            scene.destroy()
 
     def getFbxFiles(self):
         files = []
@@ -209,7 +226,9 @@ class nnData(object):
 
     def write(self,filePath):
         dataFile = open(filePath,'w')
-        for l in self.lineArray:
+        for line in self.lineArray:
+            #convert line to string. 
+            l = ', '.join(str(ln) for ln in line)
             dataFile.write("%s\n" % l)
         self.file = filePath
 
@@ -219,6 +238,10 @@ class nnData(object):
 
     def setData(self, lineArray):
         self.lineArray = lineArray
+        random.shuffle(self.lineArray)
+
+    def getData(self):
+        return self.lineArray
 
     def getInputStart(self):
         return self.inputStart
@@ -240,6 +263,10 @@ class fbxManager(dataManager):
         dataManager.__init__(self, dataType) 
         self.dataObjects = self.getObjects(self.jsonNodes[dataType])
 
+    def destroy(self):
+        for obj in self.dataObjects:
+            obj.destroy()
+
     def getObjects(self, jsonNodes):
         dataObjects = []
         for d in jsonNodes:
@@ -256,40 +283,37 @@ class fbxManager(dataManager):
         for fbxGroupName in nnConfigObj.fbxGroups:
             g = self.getObject(fbxGroupName)
             for scene in g.getFbxScenes():
+                scene.initialize()
                 for frame in range(scene.startTime,scene.endTime+1):
-                    inputLinePortion  = self.getJointDatAtFrame(nnConfigObj.input,fbxGroupName,scene,int(frame))
-                    outputLinePortion = self.getJointDatAtFrame(nnConfigObj.output,fbxGroupName,scene,int(frame))
+                    transforms = []
+                    for x in nnConfigObj.transforms:
+                        #extract transforms we will process
+                        transforms.append(mx.fbxMxtoNumpyMx(self.getJointTransformAtFrame(x,scene,int(frame))))
+                    #list of tranforms serves as arguments to 'operation'
+                    operation = getattr(op, nnConfigObj.method)
+
+                    inputLinePortion, outputLinePortion = operation(transforms)
                     line = inputLinePortion + outputLinePortion
-                    #convert line to string. 
-                    lineArray.append(', '.join(str(l) for l in line))
-        nnDataObj.inputEnd = len(inputLinePortion)-1
+                    #lineArray.append(', '.join(str(l) for l in line))
+                    lineArray.append(line)
+
+
+        nnDataObj.inputEnd = len(inputLinePortion)
         nnDataObj.outputStart = nnDataObj.inputEnd  
         nnDataObj.outputEnd = nnDataObj.outputStart + len(outputLinePortion)            
         nnDataObj.setData(lineArray)            
         return nnDataObj
 
-    def getJointDatAtFrame(self,nnConfigList, fbxGroupName, scene, frame):
-        line = []
-        for jointDataList in nnConfigList:
-            print "fbxGroup: %s fbxScene: %s frame: %s joint: %s transformPart: %s space: %s" % \
-                        (fbxGroupName,scene.fileName,frame,jointDataList[0],\
-                        jointDataList[1],jointDataList[2])
-            
-            #each jointName returns a list with elem 0 as transform component
-            #type (ie. position or rotation), and elem 1 specifies global or
-            #local offset from parent
-            if jointDataList[1]=="pos":
-                if jointDataList[2]=="world":
-                    line = line + list(scene.getGlobalPos(jointDataList[0],frame))
-                elif jointDataList[2]=="local":
-                    line = line + list(scene.getLocalPos(jointDataList[0],frame))
-            
-            elif jointDataList[1]=="rot":
-                if jointDataList[2]=="world":
-                    line = line + list(scene.getGlobalRot(jointDataList[0],frame))
-                elif jointDataList[2]=="local":
-                    line = line + list(scene.getLocalRot(jointDataList[0],frame))
-        return line
+    def getJointTransformAtFrame(self, transformList, scene, frame):
+        """
+        Return FBX mx4 for a joint within an fbx scene, at a specificed time.
+        """
+        # elem 0 is joint name
+        # elem 1 specifies global or local offset from parent
+        if transformList[1]=="world":
+            return scene.getGlobalTransform(transformList[0],frame)
+        elif transformList[1]=="local":
+            return scene.getLocalTransform(transformList[0],frame)
 
 
 
@@ -300,17 +324,9 @@ class nnConfigData(baseData):
     """
     def __init__(self, jsonNode):
         baseData.__init__(self, jsonNode)
-        self.inputStart = 0
-        self.inputEnd = self.getInputCount()-1
-        self.outputStart = self.inputEnd
-        self.outputEnd = self.getInputCount() + self.getOutputCount()-1
-        self.inputAndOutput = self.input + self.output
 
-    def getInputCount(self):
-        return len(self.input)
 
-    def getOutputCount(self):
-        return len(self.output)
+
 
 
 

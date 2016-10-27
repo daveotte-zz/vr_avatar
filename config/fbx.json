@@ -7,6 +7,86 @@
                 "referenceFbx":"/home/daveotte/work/mocap_animations/01/01_02.fbx"
             },
             {
+                "name":"playground",
+                "index":1,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/01/FBX_2013"
+            },
+            {
+                "name":"walkPunchStrike",
+                "index":2,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/02/FBX_2013"
+            },
+            {
+                "name":"walkUnevenTerrain",
+                "index":3,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/03/FBX_2013"
+            },
+            {
+                "name":"modernDance",
+                "index":5,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/05/FBX_2013"
+            },
+            {
+                "name":"basketBall",
+                "index":6,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/06/FBX_2013"
+            },
+            {
+                "name":"walk1",
+                "index":7,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/07/FBX_2013"
+            },
+            {
+                "name":"walk2",
+                "index":8,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/08/FBX_2013"
+            },
+            {
+                "name":"run",
+                "index":9,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/09/FBX_2013"
+            },
+            {
+                "name":"soccer",
+                "index":10,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/10/FBX_2013"
+            },
+            {
+                "name":"kickBall",
+                "index":11,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/11/FBX_2013"
+            },
+            {
+                "name":"taiChi",
+                "index":12,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/12/FBX_2013"
+            },
+            {
+                "name":"everyDayBehaviors",
+                "index":13,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/13/FBX_2013"
+            },
+            {
+                "name":"everyDayBehaviors2",
+                "index":14,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/14/FBX_2013"
+            },
+            {
+                "name":"everyDayBehaviorsDance",
+                "index":15,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/15/FBX_2013"
+            },
+            {
+                "name":"walkingStyles",
+                "index":16,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/16/FBX_2013"
+            },
+            {
+                "name":"communicationA",
+                "index":17,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/17/FBX_2013"
+            },
+            {
                 "name":"communicationA",
                 "index":18,
                 "dir":"/home/daveotte/work/mocap_animations_with_binary/18/FBX_2013"
@@ -46,9 +126,11 @@
         [
             {
                 "name":"predictHip",
-                "fbxGroups":[22,23],
+                "fbxGroups":[18,19,20,21,22,23],
                 "input":
                         [   
+                            ["head", "pos", "world"],
+                            ["head", "rot", "world"],                   
                             ["rHand", "pos", "world"],
                             ["rHand", "rot", "world"],
                             ["lHand", "pos", "world"],
@@ -76,7 +158,31 @@
                         ],
                         
                 "timeMode":24
+            },
+            {
+                "name":"predictHandfromForeArm",
+                "fbxGroups":[18,19,20,21,22,23],
+                "transforms":
+                        [   
+                            ["rForeArm", "world"],
+                            ["rHand", "local"]                   
+                        ],
+                "method":"posFromRot",
+                "timeMode":24
+            },
+            {
+                "name":"predictElbowsfromHeadAndHands",
+                "fbxGroups":[21],
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["rlHand", "world"],
+                            ["rForeArm", "world"],
+                            ["lForeArm", "world"]          
+                        ],
+                "method":"jointsAsHMDandControllers",
+                "timeMode":24
             }
-
-        ]   
+       ]
 }
