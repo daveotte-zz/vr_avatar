@@ -281,6 +281,7 @@ class fbxManager(dataManager):
         lineArray = []
         nnDataObj = nnData()
         for fbxGroupName in nnConfigObj.fbxGroups:
+            print 'Getting fbxGroup: %s '%(fbxGroupName)
             g = self.getObject(fbxGroupName)
             for scene in g.getFbxScenes():
                 scene.initialize()

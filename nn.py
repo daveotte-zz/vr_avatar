@@ -19,7 +19,7 @@ def initializeNN():
     nnDataConfigurations = data.nnDataConfigurations('nnDataConfigurations')
     
     #a particular configuration(the stuff I want to work with)
-    nnDataConfigObj = nnDataConfigurations.getObject('predictHandfromForeArm')
+    nnDataConfigObj = nnDataConfigurations.getObject('predictShdlrfromHeadAndHands')
 
     #fbxManager uses the nnDataConfigObj to process the data and generate the nnDataObj
     nnDataObj = fbxManager.getNnDataObj(nnDataConfigObj)

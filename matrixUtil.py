@@ -71,3 +71,9 @@ def getPosArray(mx4):
 	a numpy array.
 	"""
 	return mx4[3:4,0:3].flatten().getA()[0]
+
+def getTransformArray(mx4):
+	"""
+	Return mx4 and np array of 16 numbers.
+	"""
+	return mx4.flatten().getA()[0]

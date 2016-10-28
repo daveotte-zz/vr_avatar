@@ -110,12 +110,97 @@
                 "name":"interactionA",
                 "index":22,
                 "dir":"/home/daveotte/work/mocap_animations_with_binary/22/FBX_2013"
-            },             
+            },
             {
                 "name":"interactionB",
                 "index":23,
                 "dir":"/home/daveotte/work/mocap_animations_with_binary/23/FBX_2013"
-            },             
+            },
+            {
+                "name":"interactionB",
+                "index":24,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/24/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":25,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/25/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":26,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/26/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":27,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/27/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":28,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/28/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":29,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/29/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":30,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/30/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":31,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/31/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":32,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/32/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":33,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/33/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":34,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/34/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":35,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/35/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":36,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/36/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":37,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/37/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":38,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/38/FBX_2013"
+            },
+            {
+                "name":"interactionB",
+                "index":39,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/39/FBX_2013"
+            },         
+            {
+                "name":"interactionB",
+                "index":40,
+                "dir":"/home/daveotte/work/mocap_animations_with_binary/40/FBX_2013"
+            },                  
             {
                 "name":"test",
                 "index":0,
@@ -124,41 +209,6 @@
         ],
     "nnDataConfigurations":
         [
-            {
-                "name":"predictHip",
-                "fbxGroups":[18,19,20,21,22,23],
-                "input":
-                        [   
-                            ["head", "pos", "world"],
-                            ["head", "rot", "world"],                   
-                            ["rHand", "pos", "world"],
-                            ["rHand", "rot", "world"],
-                            ["lHand", "pos", "world"],
-                            ["lHand", "rot", "world"]                   
-                        ],
-                "output":
-                        [
-                            ["hip", "pos", "world"],
-                            ["hip", "rot", "world"]                     
-                        ],
-                "timeMode":24
-            },
-            {
-                "name":"test",
-                "fbxGroups":[0],
-                "input":
-                        [   
-                            ["rFoot", "pos", "world"],
-                            ["rFoot", "rot", "world"]                   
-                        ],
-                "output":
-                        [
-                            ["hip", "pos", "local"],
-                            ["hip", "rot", "local"]                     
-                        ],
-                        
-                "timeMode":24
-            },
             {
                 "name":"predictHandfromForeArm",
                 "fbxGroups":[18,19,20,21,22,23],
@@ -172,17 +222,27 @@
             },
             {
                 "name":"predictElbowsfromHeadAndHands",
-                "fbxGroups":[21],
+                "fbxGroups":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
                 "transforms":
                         [   
                             ["head", "world"],
                             ["rHand", "world"],    
-                            ["rlHand", "world"],
-                            ["rForeArm", "world"],
-                            ["lForeArm", "world"]          
+                            ["rForeArm", "world"]
                         ],
                 "method":"jointsAsHMDandControllers",
                 "timeMode":24
-            }
+            },
+            {
+                "name":"predictShdlrfromHeadAndHands",
+                "fbxGroups":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["rShldr", "world"]
+                        ],
+                "method":"jointsAsHMDandControllers",
+                "timeMode":24
+            }        
        ]
 }
