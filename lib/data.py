@@ -351,7 +351,9 @@ class nnData(object):
         for g in self.fbxDataObjects:
             fList = fList + g.getFbxScenes()
         return fList
-
+    #TODO - be consistent about using numpy array FOR EVERYTHING.
+    #There are fbx mx4's, python lists, and numpy arrays. I should
+    #convert fbx mx4's to numpy arrays, and then never turn back.
     @property
     def transforms(self):
         """
