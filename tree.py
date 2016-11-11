@@ -38,6 +38,14 @@ rLoarm.children = [lUparm]
 lUparm.children = [lLoarm]
 lLoarm.children = [lhand]
 
+def walkPadding (node,padding=''):
+    padding = padding + '-'
+    for i in node.children:
+        if i:
+            print "%s %s" % (padding, i.name)
+            walkPadding(i,padding)
+        else:
+            padding = ''
 
 def walk (node):
     for i in node.children:
@@ -46,4 +54,4 @@ def walk (node):
             walk(i)
 
 
-walk(root)
+walkPadding(root)
