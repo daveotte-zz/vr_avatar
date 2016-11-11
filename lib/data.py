@@ -361,23 +361,23 @@ class nnData(object):
         bigTransformList = []
         for scene in self.fbxScenes:
             scene.initialize()
-            for frame in range(scene.startTime,scene.endTime+1):
-                transforms = []
-                for x in self.nnConfig.transforms:
-                    #extract transforms we will process
-                    transforms.append(mx.fbxMxtoNumpyMx(self.fbxDataManager.getJointTransformAtFrame(x,scene,int(frame))))
-            bigTransformList.append(transforms)
+            bigTransformList = bigTransformList + self.getSceneTransforms(scene)
         return bigTransformList
 
+    def getSceneTransforms(self,scene):
+        scene.initialize()
+        sceneTransforms = []
+        for frame in range(scene.startTime,scene.endTime+1):
+            sceneTransforms.append(self.getSceneTransformsAtFrame(scene,frame))
+        return sceneTransforms
+    
     def getSceneTransformsAtFrame(self,scene,frame):
         scene.initialize()
- 
-        transforms = []
+        transformsAtFrame = []
         for x in self.nnConfig.transforms:
             #extract transforms we will process
-            transforms.append(mx.fbxMxtoNumpyMx(self.fbxDataManager.getJointTransformAtFrame(x,scene,int(frame))))
-
-        return transforms
+            transformsAtFrame.append(mx.fbxMxtoNumpyMx(self.fbxDataManager.getJointTransformAtFrame(x,scene,int(frame))))
+        return transformsAtFrame
 
     def write(self,filePath):
         dataFile = open(filePath,'w')
