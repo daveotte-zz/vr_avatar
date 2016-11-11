@@ -77,3 +77,13 @@ def getTransformArray(mx4):
 	Return mx4 and np array of 16 numbers.
 	"""
 	return mx4.flatten().getA()[0]
+
+def setPos(mx4, v3):
+	"""
+	Set mx4's pos by a vector.
+	"""
+	mx4[3:4,0:3] = v3
+	return mx4
+
+
+

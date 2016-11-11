@@ -1,5 +1,5 @@
 {
-    "fbxGroups":
+    "fbxData":
         [
 
             {
@@ -207,10 +207,10 @@
                 "dir":"/home/daveotte/work/mocap_animations_with_binary/test"
             }
         ],
-    "nnDataConfigurations":
+    "nnConfigData":
         [
             {
-                "name":"predictHandfromForeArm",
+                "name":"handFromForearm",
                 "fbxGroups":[18,19,20,21,22,23],
                 "transforms":
                         [   
@@ -221,7 +221,7 @@
                 "timeMode":24
             },
             {
-                "name":"predictElbowsfromHeadAndHands",
+                "name":"elbowsFromHeadAndHands",
                 "fbxGroups":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
                 "transforms":
                         [   
@@ -233,7 +233,7 @@
                 "timeMode":24
             },
             {
-                "name":"predictShdlrfromHeadAndHands",
+                "name":"shdlrFromHeadAndHands",
                 "fbxGroups":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
                 "transforms":
                         [   
@@ -242,6 +242,20 @@
                             ["rShldr", "world"]
                         ],
                 "method":"jointsAsHMDandControllers",
+                "timeMode":24
+            },
+            {
+                "name":"predictHip",
+                "fbxGroups":[18],
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rForeArm", "world"] 
+
+                        ],
+                "method":"predictHipFromHeadAndHands",
                 "timeMode":24
             }        
        ]
