@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1287</width>
-    <height>871</height>
+    <width>1291</width>
+    <height>934</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,75 +17,6 @@
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item alignment="Qt::AlignRight">
-         <widget class="QPushButton" name="pushButton">
-          <property name="minimumSize">
-           <size>
-            <width>85</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>85</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Play</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButton_2">
-          <property name="minimumSize">
-           <size>
-            <width>85</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>85</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Train</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="1">
-       <layout class="QVBoxLayout" name="graphicViewer">
-        <item>
-         <layout class="QVBoxLayout" name="graphicViewerWindow"/>
-        </item>
-        <item>
-         <widget class="QSlider" name="timeSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item row="1" column="0">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -136,6 +67,24 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QSlider" name="timeSlider">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <layout class="QVBoxLayout" name="verticalLayout_15">
+        <item>
+         <layout class="QVBoxLayout" name="graphicViewerWindow"/>
+        </item>
+       </layout>
+      </item>
       <item row="2" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
@@ -166,6 +115,130 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item alignment="Qt::AlignRight">
+         <widget class="QPushButton" name="playPushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>85</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>85</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Play</string>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignRight">
+         <widget class="QPushButton" name="trainPushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>85</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>85</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Train</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="2">
+       <layout class="QVBoxLayout" name="verticalLayout_11">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item alignment="Qt::AlignTop">
+         <widget class="QLabel" name="label_3">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Scale Joints</string>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignTop">
+         <widget class="QSlider" name="transformScaleSlider">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
      </layout>
     </item>
    </layout>
@@ -175,7 +248,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1287</width>
+     <width>1291</width>
      <height>25</height>
     </rect>
    </property>

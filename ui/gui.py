@@ -26,6 +26,9 @@ class UI(QtGui.QMainWindow):
         self.populateFbxSceneList()
         self.timeSlider.valueChanged.connect(self.drawCurrentFrame)
 
+        self.graphicViewObj.transformScale = 1.0
+        self.transformScaleSlider.valueChanged.connect(self.scaleTransforms)
+
     def populateConfigurationsList(self):
         for item in self.App.nnDataConfigs.dataObjects:
             self.configurationsList.addItem(item.title)
@@ -42,7 +45,12 @@ class UI(QtGui.QMainWindow):
             #a dict we can use to get the object given the basename
             self.fbxBasename2Object[item.basename] = item
 
-
+    def scaleTransforms(self):
+        """
+        Apply a scale the matrix axes.
+        """
+        self.graphicViewObj.transformScale = float(self.transformScaleSlider.value())
+        self.graphicViewObj.updateGL()
     
     def drawCurrentFrame(self):
         print 'drawing'
@@ -69,6 +77,7 @@ class Viewer3DWidget(QGLWidget):
         format = QGLFormat()
         format.setSampleBuffers(True)
         self.setFormat(format)
+        self.transformScale = 1.0
 
     def paintGL(self):
         glEnable(GL_MULTISAMPLE)
@@ -146,7 +155,15 @@ class Viewer3DWidget(QGLWidget):
         axisColor[1] = [0.0, 1.0, 0.0]
         axisColor[2] = [0.0, 0.0, 1.0]
         glMatrixMode(GL_MODELVIEW)
-        glTranslatef(mx.item(12),mx.item(13),mx.item(15))
+        glLoadMatrixf(mx)
+        #glTranslatef(mx.item(12),mx.item(13),mx.item(15))
+
+        mx = np.matrix(np.identity(4))
+        scale = 1+self.transformScale*0.3
+        mx[0:1,0:1] = scale
+        mx[1:2,1:2] = scale
+        mx[2:3,2:3] = scale
+
 
 
         for i in range(3):
