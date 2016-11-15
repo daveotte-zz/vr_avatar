@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1291</width>
-    <height>934</height>
+    <height>952</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -65,6 +65,39 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="skeletonCheckbox">
+          <property name="text">
+           <string>Skeleton</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="extractedCheckbox">
+          <property name="text">
+           <string>Extracted Transforms</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="manipulatedCheckbox">
+          <property name="text">
+           <string>Manipulated Transforms</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <property name="tristate">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="2" column="1">
@@ -86,34 +119,7 @@
        </layout>
       </item>
       <item row="2" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QCheckBox" name="checkBox_2">
-          <property name="text">
-           <string>Extracted</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBox">
-          <property name="text">
-           <string>Manipulated</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-          <property name="tristate">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <layout class="QVBoxLayout" name="verticalLayout"/>
       </item>
       <item row="2" column="2">
        <layout class="QHBoxLayout" name="horizontalLayout_5">

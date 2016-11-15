@@ -1,7 +1,7 @@
 
 
 import sys
-from data import fbxDataManager, nnConfigDataManager, nnData
+from data import fbxGroupManager, nnConfigDataManager, nnData
 from keras.models import Sequential
 from keras.layers import Dense
 import keras.optimizers
@@ -16,23 +16,22 @@ from PyQt4 import QtGui
 # Application class
 class NN(object):
     def __init__(self):
-        self.fbxData = fbxDataManager('fbxData')
+        self.fbxGroupManager = fbxGroupManager('fbxGroup')
         self.nnDataConfigs = nnConfigDataManager('nnConfigData')
         self.nnConfig = self.nnDataConfigs.getObject('predictHip')
-        self.nnDataObj = nnData(self.fbxData, self.nnConfig)
-
+        self.nnData = nnData(self.fbxGroupManager, self.nnConfig)
 
 
 
     def run(self):
 
-        #self.nnDataObj can write out the data, or return a np array
-        self.nnDataObj.write('/home/daveotte/work/output.csv')
+        #self.nnData can write out the data, or return a np array
+        self.nnData.write('/home/daveotte/work/output.csv')
         print "inputStart: %d, inputEnd: %d, outputStart: %d, outputEnd: %d" % \
-                                    (self.nnDataObj.inputStart,
-                                     self.nnDataObj.inputEnd,  
-                                     self.nnDataObj.outputStart,
-                                     self.nnDataObj.outputEnd)
+                                    (self.nnData.inputStart,
+                                     self.nnData.inputEnd,  
+                                     self.nnData.outputStart,
+                                     self.nnData.outputEnd)
         
 
 
@@ -40,18 +39,18 @@ class NN(object):
         seed = 7
         numpy.random.seed(seed)
 
-        dataSet = numpy.array(self.nnDataObj.data)
+        dataSet = numpy.array(self.nnData.data)
         
         # split into input (X) and output (Y) variables
-        X = dataSet[:,self.nnDataObj.inputStart:self.nnDataObj.inputEnd]
-        Y = dataSet[:,self.nnDataObj.outputStart:self.nnDataObj.outputEnd]
+        X = dataSet[:,self.nnData.inputStart:self.nnData.inputEnd]
+        Y = dataSet[:,self.nnData.outputStart:self.nnData.outputEnd]
         #X = dataSet[:,0:3]
         #Y = dataSet[:,3:15]
         
         model = Sequential()
 
-        inputDim = self.nnDataObj.inputEnd
-        outputDim = (self.nnDataObj.outputEnd-self.nnDataObj.outputStart)
+        inputDim = self.nnData.inputEnd
+        outputDim = (self.nnData.outputEnd-self.nnData.outputStart)
 
         #Dense:fully connected- arg1:number of nodes, input_dim(eq to number of input nodes
         #init:initialize network weights <default is 0 and .05), activation (type of function,

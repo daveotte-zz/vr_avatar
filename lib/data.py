@@ -4,7 +4,7 @@ import site
 import random
 import sys
 import re
-import matrixUtil as mx
+import matrixUtil as mxUtil
 import operations as op
 from path import Path
 
@@ -91,7 +91,7 @@ class dataManager(object):
         return None
 
 
-class fbxDataManager(dataManager):
+class fbxGroupManager(dataManager):
     """
     Manages fbx groups, for organized directories of fbx files.
     """
@@ -102,38 +102,39 @@ class fbxDataManager(dataManager):
         for obj in self.dataObjects:
             obj.destroy()
 
-    def getJointTransformAtFrame(self, transformList, scene, frame):
-        """
-        Return FBX mx4 for a joint within an fbx scene, at a specificed time.
-        """
-        # elem 0 is joint name
-        # elem 1 specifies global or local offset from parent
-        if transformList[1]=="world":
-            return scene.getGlobalTransform(transformList[0],frame)
-        elif transformList[1]=="local":
-            return scene.getLocalTransform(transformList[0],frame)
-
     def getFbxFiles(self):
         fList = []
         for f in self.dataObjects:
             fList = flist + f.getFbxFiles()
         return fList
 
+    def getFbxGroupObjectsByIndex(self,fbxGroupIndices=[]):
+        """
+        Return all the fbx data Groups objects that will be
+        used per the nnConfig object.
+        """
+        fbxGroupObjects = []
+        for fbxGroupIndex in fbxGroupIndices:
 
-class fbxData(baseData):
+            print 'Getting fbxGroup: %s '%(fbxGroupIndex)
+            fbxGroupObjects.append(self.getObject(fbxGroupIndex))
+        return fbxGroupObjects
+
+
+class fbxGroup(baseData):
     """
     Append specific methods to deal with fbx data.
     """
     def __init__(self, jsonNode):
         baseData.__init__(self, jsonNode)
-        self.fbxFiles = self.getFbxFiles()
-        self.fbxScenes = self.getFbxScenes()
+        self.fbxFilesInGroup = self.getFbxFilesInGroup()
+        self.fbxScenesInGroup = self.getFbxScenesInGroup()
 
     def destroy(self):
         for scene in self.fbxScenes:
             scene.destroy()
 
-    def getFbxFiles(self):
+    def getFbxFilesInGroup(self):
         files = []
         if hasattr(self, 'dir'):
             for f in os.listdir(self.dir):
@@ -141,19 +142,24 @@ class fbxData(baseData):
                     files.append(self.dir+'/'+f)
         return files
 
-    def getFbxFileNames(self):
+    def getFbxFileNamesInGroup(self):
         names = []
-        for file in self.getFbxFiles():
+        for file in self.getFbxFilesInGroup():
             names.append(Path(file).basename())
         return names
 
-    def getFbxScenes(self):
-        fbxScenes = []
-        for f in self.fbxFiles:
-            fbxScenes.append(fbxScene(f))
-        return fbxScenes
+    def getFbxScenesInGroup(self):
+        fbxScenesInGroup = []
+        for f in self.fbxFilesInGroup:
+            fbxScenesInGroup.append(fbxScene(f))
+        return fbxScenesInGroup
 
 
+
+class joint(object):
+    def __init__(self,name='RootNode'):
+        self.name = name
+        self.children = [False]
 
 
 class fbxScene(object):
@@ -162,65 +168,112 @@ class fbxScene(object):
     """
     def __init__(self, fileName):
         self.fileName = fileName
-        self.initialized = False
+        self.needsInitializing = True
         self.basename = Path(self.fileName).basename()
 
     def initialize(self):
-        self.time = FbxTime()
-        self.lSdkManager, self.lScene = InitializeSdkObjects()
-        lResult = LoadScene(self.lSdkManager, self.lScene, self.fileName)
-        lAnimStack = self.lScene.GetSrcObject(FbxAnimStack.ClassId, 0)
-        
-        #set fps to 24, even though these fbx files are at 30.
-        #I'm doing this since Blender and Maya default to 24
-        self.time.SetGlobalTimeMode(11)       
-        lTs = lAnimStack.GetLocalTimeSpan()
+        if self.needsInitializing:
+            print "Initializing: %s"%(self.fileName)
+            self.time        = FbxTime()
+            self.lSdkManager, self.lScene   = InitializeSdkObjects()
+            lResult                         = LoadScene(self.lSdkManager, self.lScene, self.fileName)
+            self.needsInitializing          = False
+            
+            lAnimStack                      = self.lScene.GetSrcObject(FbxAnimStack.ClassId, 0)
+            
+            #set fps to 24, even though these fbx files are at 30.
+            #I'm doing this since Blender and Maya default to 24
+            self.time.SetGlobalTimeMode(11)       
+            lTs                             = lAnimStack.GetLocalTimeSpan()
+            lStart                          = lTs.GetStart()
+            lEnd                            = lTs.GetStop()
+            lTmpStr                         = "frank"
+            self.start                      = int(str(lStart.GetTimeString(lTmpStr, 10).replace('*','')))
+            self.end                        = int(str(lEnd.GetTimeString(lTmpStr, 10).replace('*','')))
+            self.animEval                   = self.lScene.GetAnimationEvaluator()
+            self.jointNameAndIndexDict      = self.getJointNameAndIndexDict()
+            self.jointRoot                  = self.getNode('hip')
+            self.makeSkeletonNodeNameList()
+            
 
-        lStart = lTs.GetStart()
-        lEnd   = lTs.GetStop()
-        lTmpStr="frank"
-        self.startTime = int(str(lStart.GetTimeString(lTmpStr, 10).replace('*','')))
-        self.endTime = int(str(lEnd.GetTimeString(lTmpStr, 10).replace('*','')))
 
-        self.indexDict = self.getIndexDict()
+    @property
+    def startTime(self):
+        self.initialize()
+        return self.start
 
-        self.animEval = self.lScene.GetAnimationEvaluator()
-        self.initialized = True
+    @property
+    def endTime(self):
+        self.initialize()
+        return self.start
 
-    def getIndexDict(self):
+    def getJointNameAndIndexDict(self):
         """
         Create dictionary lookup table with joint name 
         as keys, and index number by value
         """
+        self.initialize()
         indexDict = {}
         for i in range(self.lScene.GetNodeCount()):
             indexDict[self.lScene.GetNode(i).GetName()]=i
         return indexDict
+    
+    def makeSkeletonNodeNameList(self):
+        """
+        Create list of joints in skeleton. Walk hierarchy
+        from specified root node to make the list.
+        """       
+        self.skeletonNodeNameList = []
+        self.walkHierarchy(self.jointRoot)
+
+    def walkHierarchy(self, fbxNode):
+        """
+        Walk hierarchy to draw lines from parent to children.
+        """
+        self.skeletonNodeNameList.append(fbxNode.GetName())
+        for i in range(fbxNode.GetChildCount()):
+                self.walkHierarchy(fbxNode.GetChild(i))
+
+
+    def getFbxNodeNpTransformAtFrame(self, jointName, frame, transformSpace="world"):
+        """
+        Return numpy mx4 for a node within the fbx scene at a specificed time.
+        """
+        if transformSpace=="world":
+            return mxUtil.fbxMxtoNumpyMx(self.getGlobalTransform(jointName, frame))
+        elif transformSpace=="local":
+            return mxUtil.fbxMxtoNumpyMx(self.getLocalTransform(jointName, frame))
+        else:
+            print "Need to specify 'world' or 'local'."
 
     def getNodeIndexByName(self,jointName):
-        return self.getIndexDict()[jointName]
+        self.initialize()
+        return self.jointNameAndIndexDict[jointName]
 
     def getNode(self,jointName):
         """
         Return FbxNode by joint name.
         """
+        self.initialize()
         return self.lScene.GetNode(self.getNodeIndexByName(jointName))
 
     def getNpGlobalTransform(self, jointName, time=0):
-        return mx.fbxMxtoNumpyMx(self.getGlobalTransform(jointName,time))
+        return mxUtil.fbxMxtoNumpyMx(self.getGlobalTransform(jointName,time))
 
     def getNpLocalTransform(self, jointName, time=0):
-        return mx.fbxMxtoNumpyMx(self.getLocalTransform(jointName,time))
+        return mxUtil.fbxMxtoNumpyMx(self.getLocalTransform(jointName,time))
 
     def getGlobalTransform(self, jointName, time=0):
         """
         Return transform of specificied joint node,
         at the specified time.
         """
+        self.initialize()
         self.time.SetFrame(time)
         return self.animEval.GetNodeGlobalTransform(self.getNode(jointName),self.time)
  
     def getLocalTransform(self, jointName, time=0):
+        self.initialize()
         self.time.SetFrame(time)
         return self.animEval.GetNodeLocalTransform(self.getNode(jointName),self.time)
 
@@ -271,115 +324,109 @@ class fbxScene(object):
         if self.initialized:
             print 'destroy'
             self.lSdkManager.Destroy()
-
+        self.needsInitializing = True
 
 class nnData(object):
     """
-    Composes nn data using fbxDataManager and an nnConfig objects.
+    Composes nn data using fbxGroupManager and an nnConfig objects.
     """
-    def __init__(self,fbxDataManager, nnConfig):
+    def __init__(self,fbxGroupManager, nnConfig):
+        print "lkasdfasdf"
         self.nnConfig = nnConfig
-        self.fbxDataManager = fbxDataManager
-        self.data = self.setData()
+        self.fbxGroupManager = fbxGroupManager
+        manipulationClass = getattr(op, self.nnConfig.method)
+        self.manipOperation = manipulationClass()
+        self.setData()
 
     def setData(self):
+        self.nnConfigFbxGroupObjects = self.fbxGroupManager.getFbxGroupObjectsByIndex(self.nnConfig.fbxGroupIndices)     
+        self.nnConfigFbxFiles = self.getNnConfigFbxFiles()
+        self.nnConfigFbxScenes = self.getNnConfigFbxScenes()
+        self.extractedTransforms = self.extractTransforms()
         data = []
-        for transforms in self.transforms:
-            operation = getattr(op, self.nnConfig.method)
-            #list of tranforms serves as arguments to 'operation'
-            inputLinePortion, outputLinePortion = operation(transforms)
+        for transforms in self.extractedTransforms:
+            inputLinePortion, outputLinePortion = self.manipOperation.operation(transforms)
             line = inputLinePortion + outputLinePortion
             data.append(line)
         self.inputStart = 0
         self.inputEnd = len(inputLinePortion)
         self.outputStart = self.inputEnd  
-        self.outputEnd = self.outputStart + len(outputLinePortion)            
+        self.outputEnd = self.outputStart + len(outputLinePortion)    
+        self.data = data
 
-        return data
 
-    @property
-    def fbxDataObjects(self):
-        """
-        Return all the fbx data Groups objects that will be
-        used per the nnConfig object.
-        """
-        fbxGroupObjects = []
-        for fbxGroupName in self.nnConfig.fbxGroups:
-            print 'Getting fbxGroup: %s '%(fbxGroupName)
-            fbxGroupObjects.append(self.fbxDataManager.getObject(fbxGroupName))
-        return fbxGroupObjects
-
-    @property
-    def fbxScenes(self):
-        """
-        Return all the fbx scenes that will be
-        used per the nnConfig object.
-        """
-        fbxScenes = []
-        for fbxDataObj in self.fbxDataObjects:
-            fbxScenes.append(fbxDataObj.getFbxScenes())
-
-    @property
-    def fbxFiles(self):
+    def getNnConfigFbxFiles(self):
         """
         Return a list of all the files used
         per nnConfigObj
         """
         fList = []
-        for g in self.fbxDataObjects:
-            fList = fList + g.getFbxFileNames()
+        for g in self.nnConfigFbxGroupObjects:
+            fList = fList + g.getFbxFileNamesInGroup()
         return fList
 
-    @property
-    def fbxFileNames(self):
-        """
-        Return a list of all the names of all
-        the files used per nnConfigObj.
-        """
-        names = []
-        for file in self.fbxFiles:
-            names.append(Path(file).basename())
-        return names
-
-    @property
-    def fbxScenes(self):
+    def getNnConfigFbxScenes(self):
         """
         Return a list of all the fbx scenes used
         per nnConfigObj
         """
         fList = []
-        for g in self.fbxDataObjects:
-            fList = fList + g.getFbxScenes()
+        for g in self.nnConfigFbxGroupObjects:
+            fList = fList + g.getFbxScenesInGroup()
         return fList
-    #TODO - be consistent about using numpy array FOR EVERYTHING.
-    #There are fbx mx4's, python lists, and numpy arrays. I should
-    #convert fbx mx4's to numpy arrays, and then never turn back.
-    @property
-    def transforms(self):
+
+
+    def extractTransforms(self):
         """
-        A list of numpy transform lists that will
+        A list of numpy mx4 lists that will
         be used per the nnConfig object.
         """
         bigTransformList = []
-        for scene in self.fbxScenes:
-            scene.initialize()
-            bigTransformList = bigTransformList + self.getSceneTransforms(scene)
+        for scene in self.nnConfigFbxScenes:
+            bigTransformList =  bigTransformList + \
+                                self.getExtractedTransformsOverFrameRange(scene,\
+                                                                                scene.startTime,\
+                                                                                scene.endTime+1)
         return bigTransformList
 
-    def getSceneTransforms(self,scene):
-        scene.initialize()
+
+    def getExtractedTransformsOverFrameRange(self,scene,start,end):
         sceneTransforms = []
-        for frame in range(scene.startTime,scene.endTime+1):
-            sceneTransforms.append(self.getSceneTransformsAtFrame(scene,frame))
+        for frame in range(start, end+1):
+            sceneTransforms.append(self.getExtractedTransformsAtFrame(scene,frame))
         return sceneTransforms
     
-    def getSceneTransformsAtFrame(self,scene,frame):
-        scene.initialize()
+    def getExtractedTransformsAtFrame(self,scene,frame):
+        """
+        List of numpy mx4 lists. Numpy mx4 list is for each joint specified in nn configuration.
+        """
         transformsAtFrame = []
-        for x in self.nnConfig.transforms:
+        for jointNameAndTransformType in self.nnConfig.transforms:
             #extract transforms we will process
-            transformsAtFrame.append(mx.fbxMxtoNumpyMx(self.fbxDataManager.getJointTransformAtFrame(x,scene,int(frame))))
+            transformsAtFrame.append(scene.getFbxNodeNpTransformAtFrame \
+                                                            (jointNameAndTransformType[0],\
+                                                            frame,\
+                                                            jointNameAndTransformType[1]))
         return transformsAtFrame
+
+    def drawExtractedTransformsAtFrame(self,scene,frame,transformScale):
+        for mx in self.getExtractedTransformsAtFrame(scene,frame):
+            mxUtil.drawMx(mx,transformScale)
+
+    def drawManipulatedTransformsAtFrame(self,scene,frame,transformScale):
+        self.manipOperation.operation(self.getExtractedTransformsAtFrame(scene,frame))
+        self.manipOperation.transformScale = transformScale
+        self.manipOperation.draw()
+
+
+    def getOpObjAtFrame(self,scene,frame):
+        """
+        List of numpy mx4 lists. Numpy mx4 list is for each joint specified in nn configuration.
+        """
+        manipulatedTransformsAtFrame = self.getExtractedTransformsAtFrame(scene,frame)
+        opObj = self.operationClass(manipulatedTransformsAtFrame)
+        return opObj
+
 
     def write(self,filePath):
         dataFile = open(filePath,'w')
@@ -393,12 +440,13 @@ class nnData(object):
         for l in self.data:
             print l
 
-
-
+    @property
+    def fbxScenes(self):
+        return self.nnConfigFbxScenes
 '''
 Why make these classes? To avoid writing a many
 lines of code to specify we want the base class 'dataManager'
-instead of the subclass, here names 'nnConfigDataManager'.
+instead of the subclass, here named 'nnConfigDataManager'.
 '''
 class nnConfigDataManager(dataManager):
     def __init__(self, dataType):

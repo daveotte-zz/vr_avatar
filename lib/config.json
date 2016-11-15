@@ -1,5 +1,5 @@
 {
-    "fbxData":
+    "fbxGroup":
         [
 
             {
@@ -211,7 +211,7 @@
         [
             {
                 "name":"handFromForearm",
-                "fbxGroups":[18,19,20,21,22,23],
+                "fbxGroupIndices":[18,19,20,21,22,23],
                 "transforms":
                         [   
                             ["rForeArm", "world"],
@@ -222,7 +222,7 @@
             },
             {
                 "name":"elbowsFromHeadAndHands",
-                "fbxGroups":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+                "fbxGroupIndices":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
                 "transforms":
                         [   
                             ["head", "world"],
@@ -234,7 +234,7 @@
             },
             {
                 "name":"shdlrFromHeadAndHands",
-                "fbxGroups":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+                "fbxGroupIndices":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
                 "transforms":
                         [   
                             ["head", "world"],
@@ -246,7 +246,7 @@
             },
             {
                 "name":"predictHip",
-                "fbxGroups":[18],
+                "fbxGroupIndices":[18],
                 "transforms":
                         [   
                             ["head", "world"],
@@ -255,7 +255,7 @@
                             ["rForeArm", "world"] 
 
                         ],
-                "method":"predictHipFromHeadAndHands",
+                "method":"predictHip",
                 "timeMode":24
             }        
        ]
