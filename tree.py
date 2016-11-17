@@ -2,7 +2,9 @@ class node(object):
     def __init__(self,name='root'):
         self.children = [False]
         self.name = name
-        
+'''
+I changed the code in VS.
+'''
 root = node()
 hip = node('hip')
 rUpleg = node('rUpleg')
