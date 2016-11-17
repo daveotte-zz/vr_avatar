@@ -1,7 +1,7 @@
 
 
 import sys
-from data import fbxGroupManager, nnConfigDataManager, nnData
+from data import fbxGroupManager, nnConfigDataManager, nnData, transformsFilesManager
 from keras.models import Sequential
 from keras.layers import Dense
 import keras.optimizers
@@ -20,8 +20,8 @@ class NN(object):
         self.nnDataConfigs = nnConfigDataManager('nnConfigData')
         self.nnConfig = self.nnDataConfigs.getObject('predictHip')
         self.nnData = nnData(self.fbxGroupManager, self.nnConfig)
-
-
+        self.transformsFile = transformsFilesManager('transformsFiles')
+        self.HMDtransforms = self.transformsFile.getObject('viveCapture')
 
     def run(self):
 

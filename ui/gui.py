@@ -17,6 +17,7 @@ class UI(QtGui.QMainWindow):
         uic.loadUi('./ui/gui.ui', self)
         self.graphicViewObj = Viewer3DWidget(self)
         self.graphicViewObj.nnData = self.nnData
+        self.graphicViewObj.HMDtransforms = App.HMDtransforms
         self.graphicViewerWindow.addWidget(self.graphicViewObj)
         self.setStyleSheet(open('./ui/dark.qss').read())
         self.setup()
@@ -52,6 +53,9 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.showManipulatedTransforms = self.manipulatedCheckbox.checkState()
         self.manipulatedCheckbox.stateChanged.connect(self.setShowManipulatedTransforms)
 
+        self.graphicViewObj.showHMDTransforms = self.hmdCheckbox.checkState()
+        self.hmdCheckbox.stateChanged.connect(self.setShowHMDTransforms)
+
     def populateConfigurationsList(self):
         for item in self.nnDataConfigs.dataObjects:
             self.configurationsList.addItem(item.title)
@@ -82,6 +86,9 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.showManipulatedTransforms = self.manipulatedCheckbox.checkState()
         self.graphicViewObj.updateGL()
 
+    def setShowHMDTransforms(self):
+        self.graphicViewObj.showHMDTransforms = self.hmdCheckbox.checkState()
+        self.graphicViewObj.updateGL()
 
     def setShowSkeleton(self):
         self.graphicViewObj.showSkeleton = self.skeletonCheckbox.checkState()
@@ -151,6 +158,9 @@ class Viewer3DWidget(QGLWidget):
         if self.showManipulatedTransforms:
             self.nnData.drawManipulatedTransformsAtFrame(self.fbxScene,self.frame,self.transformScale)
         
+        if self.showHMDTransforms:
+            self.HMDtransforms.drawAtFrame(self.frame,self.transformScale)
+
         glFlush()
 
     def resizeGL(self, widthInPixels, heightInPixels):

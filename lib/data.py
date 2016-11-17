@@ -60,6 +60,7 @@ class dataManager(object):
     """
     def __init__(self, dataType):
         self.dataType = dataType
+        print "Getting Data type: %s"%dataType
         self.dataObjects = self.getObjects(json.loads(open(getJsonFile()).read()))      
         
     def getObjects(self, jsonNodes):
@@ -330,8 +331,7 @@ class nnData(object):
     """
     Composes nn data using fbxGroupManager and an nnConfig objects.
     """
-    def __init__(self,fbxGroupManager, nnConfig):
-        print "lkasdfasdf"
+    def __init__(self,fbxGroupManager,nnConfig):
         self.nnConfig = nnConfig
         self.fbxGroupManager = fbxGroupManager
         manipulationClass = getattr(op, self.nnConfig.method)
@@ -443,6 +443,21 @@ class nnData(object):
     @property
     def fbxScenes(self):
         return self.nnConfigFbxScenes
+
+class transformsFilesManager(dataManager):
+    def __init__(self, dataType):
+        dataManager.__init__(self, dataType) 
+ 
+class transformsFiles(baseData):
+    def __init__(self, jsonNode):
+        baseData.__init__(self, jsonNode) 
+        self.transforms = [line.rstrip('\n') for line in open(self.file)]
+
+    def drawAtFrame(self,frame,transformScale):
+        mxUtil.drawMx(mxUtil.listToNumpyMx(self.transforms[frame]),transformScale)
+
+
+
 '''
 Why make these classes? To avoid writing a many
 lines of code to specify we want the base class 'dataManager'

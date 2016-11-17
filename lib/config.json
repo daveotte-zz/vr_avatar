@@ -207,6 +207,17 @@
                 "dir":"/home/daveotte/work/mocap_animations_with_binary/test"
             }
         ],
+
+    "transformsFiles":
+        [
+
+            {
+                "name":"viveCapture",
+                "file":"/home/daveotte/work/vr_avatar/HMDtransforms.txt"
+            }
+        ],
+
+        
     "nnConfigData":
         [
             {
