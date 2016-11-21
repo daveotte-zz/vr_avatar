@@ -3,8 +3,8 @@ from ui.gui import UI
 
 
 nn = NN()
-#nn.run()
-ApplicationUI = UI(nn)
+nn.run()
+#ApplicationUI = UI(nn)
 
 
 

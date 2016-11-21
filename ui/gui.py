@@ -19,11 +19,11 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.trainingData = self.trainingData
         self.graphicViewObj.testingData = App.testingData
         self.graphicViewObj.transformsFileManager = self.App.transformsFileManager
+        self.graphicViewObj.frame = 0
         self.graphicViewerWindow.addWidget(self.graphicViewObj)
         self.setStyleSheet(open('./ui/dark.qss').read())
         self.setup()
         self.show()
-        self.frame = 0
 
         self.drawCurrentFrame()
         sys.exit(app.exec_())
@@ -57,14 +57,11 @@ class UI(QtGui.QMainWindow):
         self.trainPushButton.pressed.connect(self.run)
         self.predictPushButton.pressed.connect(self.predict)
 
-
-
+        self.graphicViewObj.showGrid = self.gridCheckbox.isChecked()
+        self.gridCheckbox.stateChanged.connect(self.setShowGrid)
 
         self.graphicViewObj.scene = self.getFbxScene()
         self.sceneList.currentItemChanged.connect(self.drawCurrentFrame)
-
-
-
 
         self.timeLine =  QtCore.QTimeLine(1000)
         #set infinite looping
@@ -72,16 +69,13 @@ class UI(QtGui.QMainWindow):
         self.timeLine.setCurveShape(3)
         self.fps = 24
         
-
         #set Frame range and time duration
         self.setupTimeLine()
-
         
         #connect timeSlider to timeLine
         self.timeSlider.sliderPressed.connect(self.stopTimeline)
         self.timeSlider.rangeChanged.connect(self.setupTimeLine)
         self.timeSlider.sliderReleased.connect(self.setTimeLineCurrentFrame)
-
 
         #connect timeLine to timeSlider
         self.timeLine.frameChanged.connect(self.setTimeSlider)
@@ -230,6 +224,11 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.updateGL()
 
 
+    def setShowGrid(self):
+        self.graphicViewObj.showGrid = self.gridCheckbox.isChecked()
+        self.graphicViewObj.updateGL()
+
+
     #Draw entire skeleton
     def drawCurrentFrame(self):
         print 'drawing'
@@ -271,7 +270,6 @@ class Viewer3DWidget(QGLWidget):
         format.setSampleBuffers(True)
         self.setFormat(format)
         self.transformScale = 1.0
-        self.setInitialTransform = True
 
 
 
@@ -287,22 +285,15 @@ class Viewer3DWidget(QGLWidget):
         glLoadIdentity()
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        '''
-        glDepthFunc( GL_LEQUAL )
-        glEnable( GL_DEPTH_TEST )
-        glEnable( GL_CULL_FACE )
-        glFrontFace( GL_CCW )
-        glDisable( GL_LIGHTING )
-        glShadeModel( GL_FLAT )
-        '''
-        self.drawGrid()
-
+        
+        if self.showGrid:
+            self.drawGrid()
         if self.showSkeleton:
             if self.scene.basename.endswith('.fbx'):
                 self.drawSkeleton()
             else:
                 self.scene.drawAtFrame(self.frame,self.transformScale)
-
+        
         if self.showExtractedTransforms:
             self.trainingData.drawExtractedTransformsAtFrame(self.scene,self.frame,self.transformScale)
 
@@ -314,6 +305,7 @@ class Viewer3DWidget(QGLWidget):
 
         if self.showCorrectTransforms:
             self.testingData.drawCorrectTransformsAtFrame(self.frame)
+        
         glFlush()
 
     def resizeGL(self, widthInPixels, heightInPixels):
@@ -323,9 +315,6 @@ class Viewer3DWidget(QGLWidget):
     def initializeGL(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClearDepth(1.0)
-
-        # glMatrixMode(GL_PROJECTION)
-        # glLoadIdentity()
 
     def mouseMoveEvent(self, mouseEvent):
         if int(mouseEvent.buttons()) != QtCore.Qt.NoButton :
@@ -355,7 +344,7 @@ class Viewer3DWidget(QGLWidget):
         print "mouse release"
         self.isPressed = False
 
-    def drawSkeleton(self,):
+    def drawSkeleton(self):
         """
         Draw skeleton with lines from parent to child.
         Then draw xform of each node in skeleton.

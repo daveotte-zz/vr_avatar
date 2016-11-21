@@ -83,7 +83,7 @@ class NN(object):
         #release memory. Call destroy on fbx scenes (which is calling c++)
         #fbxManager.destroy()
         
-        model.fit(X,Y, nb_epoch=40, batch_size=1)
+        model.fit(X,Y, nb_epoch=100, batch_size=1)
         self.filePath = "/home/daveotte/work/myModel.h5"
         if os.path.isfile(self.filePath):
             os.remove(self.filePath)

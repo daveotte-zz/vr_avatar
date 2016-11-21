@@ -70,7 +70,7 @@ class Camera:
     def setSceneRadius(self,radius):
         self.sceneRadius = radius
 
-    def transform(self, setInitial=False):
+    def transform(self):
         tangent = math.tan( self.FIELD_OF_VIEW_IN_DEGREES/2.0 / 180.0 * math.pi )
         viewportRadius = self.nearPlane * tangent
         if self.viewportWidthInPixels < self.viewportHeightInPixels:
