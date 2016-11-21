@@ -45,6 +45,12 @@ class Camera:
 
         self.reset()
 
+
+    def setInitial(self):       
+        self.reset
+        self.position = Point3D(-5.0, 8.0, -450)
+
+
     def reset(self):
         tangent = math.tan( self.FIELD_OF_VIEW_IN_DEGREES/2.0 / 180.0 * math.pi )
         distanceFromTarget = self.sceneRadius / tangent
@@ -64,7 +70,7 @@ class Camera:
     def setSceneRadius(self,radius):
         self.sceneRadius = radius
 
-    def transform(self):
+    def transform(self, setInitial=False):
         tangent = math.tan( self.FIELD_OF_VIEW_IN_DEGREES/2.0 / 180.0 * math.pi )
         viewportRadius = self.nearPlane * tangent
         if self.viewportWidthInPixels < self.viewportHeightInPixels:

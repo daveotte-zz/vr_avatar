@@ -92,7 +92,7 @@ def predictHipFromHeadAndHands(transformList):
 
     return inputArray, outputArray
 
-class predictHip(object):
+class predictElbow(object):
     def __init__(self):
         self.transformScale = 1.0
     
@@ -131,15 +131,17 @@ class predictHip(object):
 
         inputArray = mxUtil.getTransformArray(rHandMx4).tolist() + mxUtil.getRotArray(headMx4).tolist() + mxUtil.getTransformArray(lHandMx4).tolist()
         outputArray = []
-        outputArray.append(mxUtil.getPosArray(rForeArmMx4).tolist()[2])        
-        outputArray =  outputArray
+
+        outputArray = mxUtil.getPosArray(rForeArmMx4).tolist()      
 
         self.drawMxs = [rHandMx4,headMx4,lHandMx4,rForeArmMx4]
+        self.drawPos = outputArray
         return inputArray, outputArray
 
     def draw(self):
         for mx in self.drawMxs:
             mxUtil.drawMx(mx,self.transformScale)
+        mxUtil.drawPos(self.drawPos)
 
 
 

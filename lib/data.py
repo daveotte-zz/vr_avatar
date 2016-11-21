@@ -28,7 +28,7 @@ from DisplayAnimation       import DisplayAnimation
 from DisplayGenericInfo     import DisplayGenericInfo
 
 from FbxCommon import *
-
+import numpy as np
 
 def camel2Title(camel):
     return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', camel).title()
@@ -206,7 +206,7 @@ class fbxScene(object):
     @property
     def endTime(self):
         self.initialize()
-        return self.start
+        return self.end
 
     def getJointNameAndIndexDict(self):
         """
@@ -331,18 +331,23 @@ class nnData(object):
     """
     Composes nn data using fbxGroupManager and an nnConfig objects.
     """
-    def __init__(self,fbxGroupManager,nnConfig):
+    def __init__(self,fbxGroupManager,nnConfig,training=True):
         self.nnConfig = nnConfig
         self.fbxGroupManager = fbxGroupManager
         manipulationClass = getattr(op, self.nnConfig.method)
         self.manipOperation = manipulationClass()
+        if training:
+            self.fbxGroupIndices = self.nnConfig.trainingfbxGroupIndices
+        else:
+            self.fbxGroupIndices = self.nnConfig.testingfbxGroupIndices
         self.setData()
 
+
     def setData(self):
-        self.nnConfigFbxGroupObjects = self.fbxGroupManager.getFbxGroupObjectsByIndex(self.nnConfig.fbxGroupIndices)     
+        self.nnConfigFbxGroupObjects = self.fbxGroupManager.getFbxGroupObjectsByIndex(self.fbxGroupIndices)     
         self.nnConfigFbxFiles = self.getNnConfigFbxFiles()
         self.nnConfigFbxScenes = self.getNnConfigFbxScenes()
-        self.extractedTransforms = self.extractTransforms()
+        self.extractedTransforms = self.getExtractTransforms()
         data = []
         for transforms in self.extractedTransforms:
             inputLinePortion, outputLinePortion = self.manipOperation.operation(transforms)
@@ -353,7 +358,9 @@ class nnData(object):
         self.outputStart = self.inputEnd  
         self.outputEnd = self.outputStart + len(outputLinePortion)    
         self.data = data
-
+        dataSet = np.array(self.data)
+        self.correctTransforms = dataSet[:,int(self.outputStart):int(self.outputEnd)]
+        print "Correct: %s"%(str(self.correctTransforms))
 
     def getNnConfigFbxFiles(self):
         """
@@ -372,21 +379,22 @@ class nnData(object):
         """
         fList = []
         for g in self.nnConfigFbxGroupObjects:
-            fList = fList + g.getFbxScenesInGroup()
+            fList = fList + g.getFbxScenesInGroup() 
         return fList
 
 
-    def extractTransforms(self):
+    def getExtractTransforms(self):
         """
         A list of numpy mx4 lists that will
         be used per the nnConfig object.
         """
         bigTransformList = []
         for scene in self.nnConfigFbxScenes:
-            bigTransformList =  bigTransformList + \
-                                self.getExtractedTransformsOverFrameRange(scene,\
+
+            bigTransformList =  bigTransformList + self.getExtractedTransformsOverFrameRange(scene,\
                                                                                 scene.startTime,\
                                                                                 scene.endTime+1)
+        
         return bigTransformList
 
 
@@ -412,6 +420,18 @@ class nnData(object):
     def drawExtractedTransformsAtFrame(self,scene,frame,transformScale):
         for mx in self.getExtractedTransformsAtFrame(scene,frame):
             mxUtil.drawMx(mx,transformScale)
+
+    def drawPredictedTransformsAtFrame(self,frame):
+        print "drawing predicted: %s"%(str(self.predictedTransforms[frame]))
+        magenta = [1.0,0.0,1.0]
+        size = 6
+        mxUtil.drawPos(self.predictedTransforms[frame],size,magenta)
+            
+    def drawCorrectTransformsAtFrame(self,frame):
+        print "drawing correct: %s"%(str(self.correctTransforms[frame]))
+        yellow = [1.0,1.0,0.0]
+        size = 6
+        mxUtil.drawPos(self.correctTransforms[frame],size,yellow)
 
     def drawManipulatedTransformsAtFrame(self,scene,frame,transformScale):
         self.manipOperation.operation(self.getExtractedTransformsAtFrame(scene,frame))
@@ -451,10 +471,14 @@ class transformsFilesManager(dataManager):
 class transformsFiles(baseData):
     def __init__(self, jsonNode):
         baseData.__init__(self, jsonNode) 
-        self.transforms = [line.rstrip('\n') for line in open(self.file)]
+        self.transforms = [line.rstrip('\n') for line in open(self.fileName)]
+        self.basename = Path(self.fileName).basename()
+        self.start = 0
+        self.end = len(self.transforms)
 
     def drawAtFrame(self,frame,transformScale):
         mxUtil.drawMx(mxUtil.listToNumpyMx(self.transforms[frame]),transformScale)
+
 
 
 
@@ -470,5 +494,6 @@ class nnConfigDataManager(dataManager):
 class nnConfigData(baseData):
     def __init__(self, jsonNode):
         baseData.__init__(self, jsonNode) 
+
 
 

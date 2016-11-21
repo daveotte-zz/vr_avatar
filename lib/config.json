@@ -213,11 +213,11 @@
 
             {
                 "name":"viveCapture",
-                "file":"/home/daveotte/work/vr_avatar/HMDtransforms.txt"
+                "fileName":"/home/daveotte/work/vr_avatar/HMDtransforms.txt"
             }
         ],
 
-        
+
     "nnConfigData":
         [
             {
@@ -256,8 +256,9 @@
                 "timeMode":24
             },
             {
-                "name":"predictHip",
-                "fbxGroupIndices":[18],
+                "name":"predictElbow",
+                "trainingfbxGroupIndices":[23],
+                "testingfbxGroupIndices":[23],
                 "transforms":
                         [   
                             ["head", "world"],
@@ -266,7 +267,7 @@
                             ["rForeArm", "world"] 
 
                         ],
-                "method":"predictHip",
+                "method":"predictElbow",
                 "timeMode":24
             }        
        ]

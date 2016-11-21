@@ -3,14 +3,15 @@
 import sys
 from data import fbxGroupManager, nnConfigDataManager, nnData, transformsFilesManager
 from keras.models import Sequential
+from keras.models import model_from_json
 from keras.layers import Dense
 import keras.optimizers
 import numpy
 from keras.layers.normalization import BatchNormalization
 from ui import gui
 from PyQt4 import QtGui
-
-
+import os
+import random
 
 
 # Application class
@@ -18,39 +19,42 @@ class NN(object):
     def __init__(self):
         self.fbxGroupManager = fbxGroupManager('fbxGroup')
         self.nnDataConfigs = nnConfigDataManager('nnConfigData')
-        self.nnConfig = self.nnDataConfigs.getObject('predictHip')
-        self.nnData = nnData(self.fbxGroupManager, self.nnConfig)
-        self.transformsFile = transformsFilesManager('transformsFiles')
-        self.HMDtransforms = self.transformsFile.getObject('viveCapture')
+        self.nnConfig = self.nnDataConfigs.getObject('predictElbow')
+        self.trainingData = nnData(self.fbxGroupManager, self.nnConfig, training=True)
+        self.testingData = nnData(self.fbxGroupManager, self.nnConfig, training=False)
 
+        self.transformsFileManager = transformsFilesManager('transformsFiles')
+        dataSet = numpy.array(self.testingData.data)
+        
+        # split into input (X) and output (Y) variables
+        self.trainingSetX = dataSet[:,self.testingData.inputStart:self.trainingData.inputEnd]
     def run(self):
 
-        #self.nnData can write out the data, or return a np array
-        self.nnData.write('/home/daveotte/work/output.csv')
+        #self.trainingData can write out the data, or return a np array
+        self.trainingData.write('/home/daveotte/work/output.csv')
         print "inputStart: %d, inputEnd: %d, outputStart: %d, outputEnd: %d" % \
-                                    (self.nnData.inputStart,
-                                     self.nnData.inputEnd,  
-                                     self.nnData.outputStart,
-                                     self.nnData.outputEnd)
+                                    (self.trainingData.inputStart,
+                                     self.trainingData.inputEnd,  
+                                     self.trainingData.outputStart,
+                                     self.trainingData.outputEnd)
         
 
 
         # fix random seed for reproducibility
         seed = 7
         numpy.random.seed(seed)
-
-        dataSet = numpy.array(self.nnData.data)
-        
+        dataSet = numpy.array(self.trainingData.data)
+        random.shuffle(dataSet)
         # split into input (X) and output (Y) variables
-        X = dataSet[:,self.nnData.inputStart:self.nnData.inputEnd]
-        Y = dataSet[:,self.nnData.outputStart:self.nnData.outputEnd]
+        X = dataSet[:,self.trainingData.inputStart:self.trainingData.inputEnd]
+        Y = dataSet[:,self.trainingData.outputStart:self.trainingData.outputEnd]
         #X = dataSet[:,0:3]
         #Y = dataSet[:,3:15]
         
         model = Sequential()
 
-        inputDim = self.nnData.inputEnd
-        outputDim = (self.nnData.outputEnd-self.nnData.outputStart)
+        inputDim = self.trainingData.inputEnd
+        outputDim = (self.trainingData.outputEnd-self.trainingData.outputStart)
 
         #Dense:fully connected- arg1:number of nodes, input_dim(eq to number of input nodes
         #init:initialize network weights <default is 0 and .05), activation (type of function,
@@ -58,9 +62,6 @@ class NN(object):
         
         model.add(Dense(inputDim, input_dim=inputDim, init='normal', activation='relu'))
         model.add(Dense(inputDim*50, init='normal', activation='relu'))
-        #model.add(Dense(outputDim*50, init='normal', activation='relu'))
-        #model.add(Dense(outputDim*50, init='normal', activation='relu'))
-        #model.add(Dense(outputDim*50, init='normal', activation='softplus'))
         model.add(Dense(outputDim, init='normal', activation='linear'))
 
         #this python is an interface to the theano or TensorFlow "backend"... this
@@ -81,10 +82,28 @@ class NN(object):
         
         #release memory. Call destroy on fbx scenes (which is calling c++)
         #fbxManager.destroy()
+        
+        model.fit(X,Y, nb_epoch=40, batch_size=1)
+        self.filePath = "/home/daveotte/work/myModel.h5"
+        if os.path.isfile(self.filePath):
+            os.remove(self.filePath)
+        model.save_weights(self.filePath)
+        if os.path.isfile("/home/daveotte/work/myModel.json"):
+            os.remove("/home/daveotte/work/myModel.json")
+        jsonString = model.to_json()
+        jsonFile = open("/home/daveotte/work/myModel.json",'w')
+        jsonFile.write(jsonString)
+        jsonFile.close()
 
-        model.fit(X,Y, nb_epoch=100, batch_size=1)
+        del model
 
+        #scores = model.predict_on_batch(X)
+
+        #print scores
+        #self.testingData.predictedTransforms = scores
         '''
+
+      
         
         #testSet = numpy.loadtxt("/work/chartd/users/daveotte/cpp/raytracer/render_data.txt", delimiter=",")
         #X = testSet[:,0:9]
@@ -92,9 +111,6 @@ class NN(object):
         # split into input (X) and output (Y) variables
         X = dataset[:,0:2]
 
-
-        ## evaluate the model
-        scores = model.predict_on_batch(X)
         #print scores
         x=0
         z=0
@@ -126,6 +142,17 @@ class NN(object):
         '''
 
 
+    def predict(self):
+        
+        jsonFile = open('/home/daveotte/work/nn_weights/predictForearm1-40.json','r')
+        jsonString=jsonFile.read().replace('\n', '')
+        model = model_from_json(jsonString)
+        filePath = "/home/daveotte/work/nn_weights/predictForearm1-40.h5"
+        model.load_weights(filePath)
+        print "Predicting."
+        self.testingData.predictedTransforms = model.predict_on_batch(self.trainingSetX)
+        print str(self.testingData.predictedTransforms)
+        print "Done Predicting."
 
 
 
