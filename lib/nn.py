@@ -1,12 +1,12 @@
 
 
 import sys
-from data import fbxGroupManager, nnConfigDataManager, nnData, transformsFilesManager
+#from data import datamanafbxManager, nnConfigDataManager, nnData, transformsFilesManager
 from keras.models import Sequential
 from keras.models import model_from_json
 from keras.layers import Dense
 import keras.optimizers
-import numpy
+import numpy as np
 from keras.layers.normalization import BatchNormalization
 from ui import gui
 from PyQt4 import QtGui
@@ -14,146 +14,69 @@ import os
 import random
 
 
-# Application class
+
 class NN(object):
-    def __init__(self):
-        self.fbxGroupManager = fbxGroupManager('fbxGroup')
-        self.nnDataConfigs = nnConfigDataManager('nnConfigData')
-        self.nnConfig = self.nnDataConfigs.getObject('predictElbow')
-        self.trainingData = nnData(self.fbxGroupManager, self.nnConfig, training=True)
-        self.testingData = nnData(self.fbxGroupManager, self.nnConfig, training=False)
+    def __init__(self,nnData):
+        self.nnData = nnData
+        self.nnConfig = nnData.nnConfig
 
-        self.transformsFileManager = transformsFilesManager('transformsFiles')
-        dataSet = numpy.array(self.testingData.data)
-        
-        # split into input (X) and output (Y) variables
-        self.trainingSetX = dataSet[:,self.testingData.inputStart:self.trainingData.inputEnd]
     def run(self):
-
-        #self.trainingData can write out the data, or return a np array
-        self.trainingData.write('/home/daveotte/work/output.csv')
+        self.nnData.write()
         print "inputStart: %d, inputEnd: %d, outputStart: %d, outputEnd: %d" % \
-                                    (self.trainingData.inputStart,
-                                     self.trainingData.inputEnd,  
-                                     self.trainingData.outputStart,
-                                     self.trainingData.outputEnd)
+                                    (self.nnData.inputStart,
+                                     self.nnData.inputEnd,  
+                                     self.nnData.outputStart,
+                                     self.nnData.outputEnd)
         
+        inputData, outputData = self.data()
+        model = self.model()
+        model.fit(inputData,outputData, nb_epoch=self.nnConfig.epochs, batch_size=1)
+        self.write(model)
 
+    def write(self,model):
+        if os.path.isfile(self.nnConfig.weightsFileName):
+            os.remove(self.nnConfig.weightsFileName)
+        
+        print "Writing: %s"%(self.nnConfig.weightsFileName)
+        model.save_weights(self.nnConfig.weightsFileName)
 
-        # fix random seed for reproducibility
+        if os.path.isfile(self.nnConfig.nnFileName):
+            os.remove(self.nnConfig.nnFileName)
+        jsonFile = open(self.nnConfig.nnFileName,'w')
+
+        print "Writing: %s"%(self.nnConfig.nnFileName)
+        jsonFile.write(model.to_json())
+        jsonFile.close()
+        print "Reloading NN models."
+        self.nnData.loadModel()
+
+    def data(self):
         seed = 7
-        numpy.random.seed(seed)
-        dataSet = numpy.array(self.trainingData.data)
+        np.random.seed(seed)
+        dataSet = np.array(self.nnData.data)
         random.shuffle(dataSet)
-        # split into input (X) and output (Y) variables
-        X = dataSet[:,self.trainingData.inputStart:self.trainingData.inputEnd]
-        Y = dataSet[:,self.trainingData.outputStart:self.trainingData.outputEnd]
-        #X = dataSet[:,0:3]
-        #Y = dataSet[:,3:15]
+
+        inputData = dataSet[:,self.nnData.inputStart:self.nnData.inputEnd]
+        outputData = dataSet[:,self.nnData.outputStart:self.nnData.outputEnd]
         
+        return inputData, outputData       
+
+    def model(self):
         model = Sequential()
 
-        inputDim = self.trainingData.inputEnd
-        outputDim = (self.trainingData.outputEnd-self.trainingData.outputStart)
-
-        #Dense:fully connected- arg1:number of nodes, input_dim(eq to number of input nodes
-        #init:initialize network weights <default is 0 and .05), activation (type of function,
-        # in this case, rectifier (relu) and sigmoid (s shaped)
+        inputDim = self.nnData.inputEnd
+        outputDim = (self.nnData.outputEnd-self.nnData.outputStart)
         
         model.add(Dense(inputDim, input_dim=inputDim, init='normal', activation='relu'))
         model.add(Dense(inputDim*50, init='normal', activation='relu'))
         model.add(Dense(outputDim, init='normal', activation='linear'))
 
-        #this python is an interface to the theano or TensorFlow "backend"... this
-        #thing that really runs. It automatically knows how to optimize itself for
-        #your hardware.
-        #must specify loss function like "binary_crossentropy" for binary output,
-        #or efficient gradient descent algorithm "adam".
-        #Finally, because it is a classification problem, we will collect and
-        #report the classification accuracy as the metric.
         optim=keras.optimizers.Adagrad(lr=0.01, epsilon=1e-08)
-        # Compile model
         #optim = keras.optimizers.SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(optimizer=optim, loss='mean_squared_error')
 
-        #now we use our compiled model by running the fit() function. We specify:
-        #number of interations (or epochs using nb_epoch)
-        #set number of itertaions that happen before adjusting the weights (batch_size)
-        
-        #release memory. Call destroy on fbx scenes (which is calling c++)
-        #fbxManager.destroy()
-        
-        model.fit(X,Y, nb_epoch=100, batch_size=1)
-        self.filePath = "/home/daveotte/work/myModel.h5"
-        if os.path.isfile(self.filePath):
-            os.remove(self.filePath)
-        model.save_weights(self.filePath)
-        if os.path.isfile("/home/daveotte/work/myModel.json"):
-            os.remove("/home/daveotte/work/myModel.json")
-        jsonString = model.to_json()
-        jsonFile = open("/home/daveotte/work/myModel.json",'w')
-        jsonFile.write(jsonString)
-        jsonFile.close()
-
-        del model
-
-        #scores = model.predict_on_batch(X)
-
-        #print scores
-        #self.testingData.predictedTransforms = scores
-        '''
-
-      
-        
-        #testSet = numpy.loadtxt("/work/chartd/users/daveotte/cpp/raytracer/render_data.txt", delimiter=",")
-        #X = testSet[:,0:9]
-        dataset = numpy.loadtxt("/work/rd/users/daveotte/machine_learning/raytracer/v4/test_data/test_data.txt", delimiter=",")
-        # split into input (X) and output (Y) variables
-        X = dataset[:,0:2]
-
-        #print scores
-        x=0
-        z=0
-        y=0
-        imageDir = "/work/rd/users/daveotte/machine_learning/raytracer/v4/test_result/"
-        pixelOffset = 1
-        width=96
-
-        for i in scores:
-            z = z+1
-            print "score: " + str(z)
-            for j in i:
-        #        print  "j: " + str(y) + " " + str(j)
-                imageFile = imageDir + "result." + str(y) + ".ppm"
-                y=y+1
-                f = open(imageFile, 'w')
-                f.write("P3\n32 24\n255\n\n")
-                for rgb in numpy.nditer(j):
-                    x=x+1
-                    f.write( str(int(rgb*255*pixelOffset)) + " " )
-                    #row
-                    if x%width==0:
-                        f.write ("\n")
-                f.write ("\n\n")
-                f.close()
-                x=0
-            
-
-        '''
+        return model
 
 
-    def predict(self):
-        
-        jsonFile = open('/home/daveotte/work/nn_weights/predictForearm1-40.json','r')
-        jsonString=jsonFile.read().replace('\n', '')
-        model = model_from_json(jsonString)
-        filePath = "/home/daveotte/work/nn_weights/predictForearm1-40.h5"
-        model.load_weights(filePath)
-        print "Predicting."
-        self.testingData.predictedTransforms = model.predict_on_batch(self.trainingSetX)
-        print str(self.testingData.predictedTransforms)
-        print "Done Predicting."
-
-
-
-
+def predict(model,inputData):
+    return model.predict_on_batch(inputData)

@@ -216,49 +216,41 @@
                 "fileName":"/home/daveotte/work/vr_avatar/HMDtransforms.txt"
             }
         ],
-
-
-    "nnConfigData":
+    "trainingGroupIndices":[22,21],
+    "testingGroupIndices":[25,26],
+    "nnConfigs":["predictElbow","predictShldr"],
+    "dataGroup":
         [
             {
-                "name":"handFromForearm",
-                "fbxGroupIndices":[18,19,20,21,22,23],
-                "transforms":
-                        [   
-                            ["rForeArm", "world"],
-                            ["rHand", "local"]                   
-                        ],
-                "method":"posFromRot",
-                "timeMode":24
+                "name":"trainingData",
+                "fbxGroupIndices":[1, 2, 3]
             },
             {
-                "name":"elbowsFromHeadAndHands",
-                "fbxGroupIndices":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+                "name":"testingData",
+                "fbxGroupIndices":[23,24]
+            }
+        ],
+    "nnConfigData":
+        [
+
+            {
+                "name":"predictShldr",
                 "transforms":
                         [   
                             ["head", "world"],
                             ["rHand", "world"],    
-                            ["rForeArm", "world"]
+                            ["lHand", "world"],    
+                            ["rShldr", "world"] 
                         ],
-                "method":"jointsAsHMDandControllers",
-                "timeMode":24
-            },
-            {
-                "name":"shdlrFromHeadAndHands",
-                "fbxGroupIndices":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-                "transforms":
-                        [   
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["rShldr", "world"]
-                        ],
-                "method":"jointsAsHMDandControllers",
+                "method":"predictShldr",
+                "weightsFileName":"/home/daveotte/work/nn_weights/predictShldr.h5",
+                "nnFileName":"/home/daveotte/work/nn_weights/predictShldr.json",
+                "outputCsvFileName":"/home/daveotte/work/predictElbowOutput.csv",
+                "epochs":1,
                 "timeMode":24
             },
             {
                 "name":"predictElbow",
-                "trainingfbxGroupIndices":[1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
-                "testingfbxGroupIndices":[23],
                 "transforms":
                         [   
                             ["head", "world"],
@@ -268,6 +260,10 @@
 
                         ],
                 "method":"predictElbow",
+                "weightsFileName":"/home/daveotte/work/nn_weights/predictElbow.h5",
+                "nnFileName":"/home/daveotte/work/nn_weights/predictElbow.json",
+                "outputCsvFileName":"/home/daveotte/work/predictElbowOutput.csv",
+                "epochs":1,
                 "timeMode":24
             }        
        ]

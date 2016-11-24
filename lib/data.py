@@ -1,3 +1,4 @@
+
 import os
 import json
 import site
@@ -29,18 +30,12 @@ from DisplayGenericInfo     import DisplayGenericInfo
 
 from FbxCommon import *
 import numpy as np
-
-def camel2Title(camel):
-    return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', camel).title()
-
-
-
-#return abs path to a json file. Why do I have to do this?
-
+from keras.models import Sequential
+from keras.models import model_from_json
 
 def getJsonFile():
     '''
-    Return abs path to json files
+    Return abs path to json file.
     '''
     return os.path.dirname(__file__) + '/config.json'
 
@@ -66,6 +61,7 @@ class dataManager(object):
     def getObjects(self, jsonNodes):
         dataObjects = []
         for d in jsonNodes[self.dataType]:
+            #data type name used to find class name
             dataObj = globals()[self.dataType](d)
             if dataObj.name == "config":
                 self.config = dataObj
@@ -92,31 +88,41 @@ class dataManager(object):
         return None
 
 
-class fbxGroupManager(dataManager):
+class fbxManager(dataManager):
     """
-    Manages fbx groups, for organized directories of fbx files.
+    Manages fbx data stored on disk in organized directories(asfbx files).
     """
-    def __init__(self, dataType):
+    def __init__(self, groupIndices, dataType="fbxGroup"):
         dataManager.__init__(self, dataType) 
+        self.groupIndices = groupIndices
         
     def destroy(self):
         for obj in self.dataObjects:
             obj.destroy()
+#appears not to be used
+#    def getFbxFiles(self):
+#        fList = []
+#        for f in self.dataObjects:
+#            fList = flist + f.getFbxFiles()
+#        return fList
 
-    def getFbxFiles(self):
-        fList = []
-        for f in self.dataObjects:
-            fList = flist + f.getFbxFiles()
-        return fList
+    @property 
+    def fbxScenes(self):
+        return self.fbxScenesByFbxGroupIndices(self.groupIndices)
 
-    def getFbxGroupObjectsByIndex(self,fbxGroupIndices=[]):
+    def fbxScenesByFbxGroupIndices(self,groupIndices):
+        fbxSceneObjects = []
+        for g in self.fbxGroupObjectsByIndices(groupIndices):
+            fbxSceneObjects = fbxSceneObjects + g.fbxScenesInGroup()
+        return fbxSceneObjects
+
+    def fbxGroupObjectsByIndices(self,groupIndices):
         """
         Return all the fbx data Groups objects that will be
         used per the nnConfig object.
         """
         fbxGroupObjects = []
-        for fbxGroupIndex in fbxGroupIndices:
-
+        for fbxGroupIndex in groupIndices:
             print 'Getting fbxGroup: %s '%(fbxGroupIndex)
             fbxGroupObjects.append(self.getObject(fbxGroupIndex))
         return fbxGroupObjects
@@ -128,14 +134,12 @@ class fbxGroup(baseData):
     """
     def __init__(self, jsonNode):
         baseData.__init__(self, jsonNode)
-        self.fbxFilesInGroup = self.getFbxFilesInGroup()
-        self.fbxScenesInGroup = self.getFbxScenesInGroup()
 
     def destroy(self):
         for scene in self.fbxScenes:
             scene.destroy()
 
-    def getFbxFilesInGroup(self):
+    def fbxFilesInGroup(self):
         files = []
         if hasattr(self, 'dir'):
             for f in os.listdir(self.dir):
@@ -143,15 +147,15 @@ class fbxGroup(baseData):
                     files.append(self.dir+'/'+f)
         return files
 
-    def getFbxFileNamesInGroup(self):
+    def fbxFileNamesInGroup(self):
         names = []
-        for file in self.getFbxFilesInGroup():
+        for file in self.fbxFilesInGroup()():
             names.append(Path(file).basename())
         return names
 
-    def getFbxScenesInGroup(self):
+    def fbxScenesInGroup(self):
         fbxScenesInGroup = []
-        for f in self.fbxFilesInGroup:
+        for f in self.fbxFilesInGroup():
             fbxScenesInGroup.append(fbxScene(f))
         return fbxScenesInGroup
 
@@ -188,7 +192,7 @@ class fbxScene(object):
             lTs                             = lAnimStack.GetLocalTimeSpan()
             lStart                          = lTs.GetStart()
             lEnd                            = lTs.GetStop()
-            lTmpStr                         = "frank"
+            lTmpStr                         = "something"
             self.start                      = int(str(lStart.GetTimeString(lTmpStr, 10).replace('*','')))
             self.end                        = int(str(lEnd.GetTimeString(lTmpStr, 10).replace('*','')))
             self.animEval                   = self.lScene.GetAnimationEvaluator()
@@ -329,28 +333,23 @@ class fbxScene(object):
 
 class nnData(object):
     """
-    Composes nn data using fbxGroupManager and an nnConfig objects.
+    Composes nn data using fbxManager and an nnConfig objects.
     """
-    def __init__(self,fbxGroupManager,nnConfig,training=True):
+    def __init__(self,nnConfig,fbxScenes):
         self.nnConfig = nnConfig
-        self.fbxGroupManager = fbxGroupManager
-        manipulationClass = getattr(op, self.nnConfig.method)
-        self.manipOperation = manipulationClass()
-        if training:
-            self.fbxGroupIndices = self.nnConfig.trainingfbxGroupIndices
-        else:
-            self.fbxGroupIndices = self.nnConfig.testingfbxGroupIndices
+        self.fbxScenes = fbxScenes
+        
+        operationClass = getattr(op, self.nnConfig.method)
+        self.operation = operationClass()
+        
+        self.model = self.loadModel()
+        
         self.setData()
 
-
     def setData(self):
-        self.nnConfigFbxGroupObjects = self.fbxGroupManager.getFbxGroupObjectsByIndex(self.fbxGroupIndices)     
-        self.nnConfigFbxFiles = self.getNnConfigFbxFiles()
-        self.nnConfigFbxScenes = self.getNnConfigFbxScenes()
-        self.extractedTransforms = self.getExtractTransforms()
         data = []
-        for transforms in self.extractedTransforms:
-            inputLinePortion, outputLinePortion = self.manipOperation.operation(transforms)
+        for transforms in self.extractedTransforms():
+            inputLinePortion, outputLinePortion = self.operation.operate(transforms)
             line = inputLinePortion + outputLinePortion
             data.append(line)
         self.inputStart = 0
@@ -358,53 +357,39 @@ class nnData(object):
         self.outputStart = self.inputEnd  
         self.outputEnd = self.outputStart + len(outputLinePortion)    
         self.data = data
-        dataSet = np.array(self.data)
-        self.correctTransforms = dataSet[:,int(self.outputStart):int(self.outputEnd)]
-        print "Correct: %s"%(str(self.correctTransforms))
+        self.model = self.loadModel()
 
-    def getNnConfigFbxFiles(self):
-        """
-        Return a list of all the files used
-        per nnConfigObj
-        """
-        fList = []
-        for g in self.nnConfigFbxGroupObjects:
-            fList = fList + g.getFbxFileNamesInGroup()
-        return fList
-
-    def getNnConfigFbxScenes(self):
-        """
-        Return a list of all the fbx scenes used
-        per nnConfigObj
-        """
-        fList = []
-        for g in self.nnConfigFbxGroupObjects:
-            fList = fList + g.getFbxScenesInGroup() 
-        return fList
-
-
-    def getExtractTransforms(self):
+    def loadModel(self):
+        if os.path.isfile(self.nnConfig.nnFileName) and os.path.isfile(self.nnConfig.weightsFileName):
+            print "Loading model: %s and %s"%(self.nnConfig.nnFileName, self.nnConfig.weightsFileName)
+            jsonFile = open(self.nnConfig.nnFileName,'r')
+            jsonString = jsonFile.read().replace('\n', '')
+            model = model_from_json(jsonString)
+            model.load_weights(self.nnConfig.weightsFileName)
+            return model 
+        else:
+            return Sequential()
+        
+    def extractedTransforms(self):
         """
         A list of numpy mx4 lists that will
         be used per the nnConfig object.
         """
         bigTransformList = []
-        for scene in self.nnConfigFbxScenes:
+        for scene in self.fbxScenes:
 
-            bigTransformList =  bigTransformList + self.getExtractedTransformsOverFrameRange(scene,\
+            bigTransformList =  bigTransformList + self.extractedTransformsOverFrameRange(scene,\
                                                                                 scene.startTime,\
                                                                                 scene.endTime+1)
-        
         return bigTransformList
 
-
-    def getExtractedTransformsOverFrameRange(self,scene,start,end):
+    def extractedTransformsOverFrameRange(self,scene,start,end):
         sceneTransforms = []
         for frame in range(start, end+1):
-            sceneTransforms.append(self.getExtractedTransformsAtFrame(scene,frame))
+            sceneTransforms.append(self.extractedTransformsAtFrame(scene,frame))
         return sceneTransforms
     
-    def getExtractedTransformsAtFrame(self,scene,frame):
+    def extractedTransformsAtFrame(self,scene,frame):
         """
         List of numpy mx4 lists. Numpy mx4 list is for each joint specified in nn configuration.
         """
@@ -418,51 +403,36 @@ class nnData(object):
         return transformsAtFrame
 
     def drawExtractedTransformsAtFrame(self,scene,frame,transformScale):
-        for mx in self.getExtractedTransformsAtFrame(scene,frame):
+        for mx in self.extractedTransformsAtFrame(scene,frame):
             mxUtil.drawMx(mx,transformScale)
 
-    def drawPredictedTransformsAtFrame(self,frame):
-        print "drawing predicted: %s"%(str(self.predictedTransforms[frame]))
-        magenta = [1.0,0.0,1.0]
-        size = 6
-        mxUtil.drawPos(self.predictedTransforms[frame],size,magenta)
-            
-    def drawCorrectTransformsAtFrame(self,frame):
-        print "drawing correct: %s"%(str(self.correctTransforms[frame]))
-        yellow = [1.0,1.0,0.0]
-        size = 6
-        mxUtil.drawPos(self.correctTransforms[frame],size,yellow)
+    def drawPredictedAtFrame(self,scene,frame):
+        inputArray, outputArray = self.operation.operate(self.extractedTransformsAtFrame(scene,frame))
+        predictedOutputArray = self.model.predict_on_batch(np.array([inputArray]))
+        self.operation.predict(predictedOutputArray[0])
+        self.operation.drawPredict()
+
+    def drawRecomposeAtFrame(self,scene,frame):
+        inputArray, outputArray = self.operation.operate(self.extractedTransformsAtFrame(scene,frame))
+        predictedOutputArray = self.model.predict_on_batch(np.array([inputArray]))
+        self.operation.recompose(predictedOutputArray[0])
+        self.operation.drawRecompose()
 
     def drawManipulatedTransformsAtFrame(self,scene,frame,transformScale):
-        self.manipOperation.operation(self.getExtractedTransformsAtFrame(scene,frame))
-        self.manipOperation.transformScale = transformScale
-        self.manipOperation.draw()
+        self.operation.operate(self.extractedTransformsAtFrame(scene,frame))
+        self.operation.transformScale = transformScale
+        self.operation.draw()
 
-
-    def getOpObjAtFrame(self,scene,frame):
-        """
-        List of numpy mx4 lists. Numpy mx4 list is for each joint specified in nn configuration.
-        """
-        manipulatedTransformsAtFrame = self.getExtractedTransformsAtFrame(scene,frame)
-        opObj = self.operationClass(manipulatedTransformsAtFrame)
-        return opObj
-
-
-    def write(self,filePath):
-        dataFile = open(filePath,'w')
+    def write(self):
+        dataFile = open(self.nnConfig.outputCsvFileName,'w')
         for line in self.data:
             #convert line to string. 
             l = ', '.join(str(ln) for ln in line)
             dataFile.write("%s\n" % l)
-        self.file = filePath
 
     def printData(self):
         for l in self.data:
             print l
-
-    @property
-    def fbxScenes(self):
-        return self.nnConfigFbxScenes
 
 class transformsFilesManager(dataManager):
     def __init__(self, dataType):
@@ -488,12 +458,21 @@ lines of code to specify we want the base class 'dataManager'
 instead of the subclass, here named 'nnConfigDataManager'.
 '''
 class nnConfigDataManager(dataManager):
-    def __init__(self, dataType):
+    def __init__(self, configNames, dataType="nnConfigData"):
         dataManager.__init__(self, dataType) 
- 
+        self.nnConfigs = self.nnConfigsByConfigName(configNames)
+    
+    def nnConfigsByConfigName(self,configNames):
+        nnConfigs = []
+        for configName in configNames:
+            nnConfigs.append(self.getObject(configName))
+        return nnConfigs 
+
 class nnConfigData(baseData):
     def __init__(self, jsonNode):
         baseData.__init__(self, jsonNode) 
 
 
 
+def camel2Title(camel):
+    return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', camel).title()

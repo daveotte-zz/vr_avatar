@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1562</width>
-    <height>1048</height>
+    <height>1056</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
         <item>
          <widget class="QListWidget" name="configurationsList">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -37,8 +37,11 @@
           <property name="maximumSize">
            <size>
             <width>230</width>
-            <height>16777215</height>
+            <height>400</height>
            </size>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
           </property>
          </widget>
         </item>
@@ -102,16 +105,16 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="correctCheckbox">
+         <widget class="QCheckBox" name="predictedCheckbox">
           <property name="text">
-           <string>Correct</string>
+           <string>Predicted</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="predictedCheckbox">
+         <widget class="QCheckBox" name="recomposeCheckbox">
           <property name="text">
-           <string>Predicted</string>
+           <string>Recomposed</string>
           </property>
          </widget>
         </item>

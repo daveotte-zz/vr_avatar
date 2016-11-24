@@ -12,19 +12,22 @@ class UI(QtGui.QMainWindow):
         app = QtGui.QApplication(sys.argv)
         super(UI, self).__init__()
         self.App = App
-        self.trainingData = App.trainingData
-        self.trainingDataConfigs = App.nnDataConfigs
+
+        #nnConfigs as keys, nnData as values
+        self.nnDataDict = self.App.nnTrainDataDict
+        self.nnConfigs = self.App.nnConfigs
+        
         uic.loadUi('./ui/gui.ui', self)
+        
+        ###GRAPHIC WIDGET
         self.graphicViewObj = Viewer3DWidget(self)
-        self.graphicViewObj.trainingData = self.trainingData
-        self.graphicViewObj.testingData = App.testingData
-        self.graphicViewObj.transformsFileManager = self.App.transformsFileManager
+        self.graphicViewObj.nnDataDict = self.nnDataDict
         self.graphicViewObj.frame = 0
         self.graphicViewerWindow.addWidget(self.graphicViewObj)
         self.setStyleSheet(open('./ui/dark.qss').read())
+        
         self.setup()
         self.show()
-
         self.drawCurrentFrame()
         sys.exit(app.exec_())
         
@@ -36,6 +39,7 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.transformScale = 1.0
 
 
+        ######SHOW STUFF OR NOT
         self.graphicViewObj.showSkeleton = self.skeletonCheckbox.isChecked()
         self.skeletonCheckbox.stateChanged.connect(self.setShowSkeleton)
 
@@ -48,30 +52,38 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.showPredictedTransforms = self.predictedCheckbox.isChecked()
         self.predictedCheckbox.stateChanged.connect(self.setShowPredictedTransforms)
 
-        self.graphicViewObj.showCorrectTransforms = self.correctCheckbox.isChecked()
-        self.correctCheckbox.stateChanged.connect(self.setShowCorrectTransforms)
+        self.graphicViewObj.showRecompose = self.recomposeCheckbox.isChecked()
+        self.recomposeCheckbox.stateChanged.connect(self.setShowRecompose)
 
         self.startFrameSpinBox.valueChanged.connect(self.setTimeSliderStart)
         self.endFrameSpinBox.valueChanged.connect(self.setTimeSliderEnd)
 
-        self.trainPushButton.pressed.connect(self.run)
-        self.predictPushButton.pressed.connect(self.predict)
-
         self.graphicViewObj.showGrid = self.gridCheckbox.isChecked()
         self.gridCheckbox.stateChanged.connect(self.setShowGrid)
 
-        self.graphicViewObj.scene = self.getFbxScene()
-        self.sceneList.currentItemChanged.connect(self.drawCurrentFrame)
 
+        #####TRAINING
+        self.trainPushButton.pressed.connect(self.run)
+        self.predictPushButton.pressed.connect(self.predict)
+
+        #####SET WHAT'S CURRENT INITIALLY
+        self.graphicViewObj.scene = self.getScene()
+        self.graphicViewObj.nnConfig = self.getNnConfig()
+        self.graphicViewObj.nnData = self.nnDataDict[self.graphicViewObj.nnConfig]
+        
+        ######TIMELINE
         self.timeLine =  QtCore.QTimeLine(1000)
-        #set infinite looping
         self.timeLine.setLoopCount(0)
         self.timeLine.setCurveShape(3)
         self.fps = 24
         
         #set Frame range and time duration
         self.setupTimeLine()
-        
+
+        ####CONNECT UI ACTIONS TO METHOD CALLS
+        self.sceneList.itemSelectionChanged.connect(self.updateForSceneChange)
+        self.configurationsList.itemSelectionChanged.connect(self.updateForConfigChange)
+
         #connect timeSlider to timeLine
         self.timeSlider.sliderPressed.connect(self.stopTimeline)
         self.timeSlider.rangeChanged.connect(self.setupTimeLine)
@@ -82,7 +94,6 @@ class UI(QtGui.QMainWindow):
 
         self.playPushButton.pressed.connect(self.startOrStopTimeLine)
         self.timeLine.finished.connect(self.syncPlayButton)
-
 
         self.scaleTransforms()
         self.transformScaleSlider.valueChanged.connect(self.scaleTransforms)
@@ -98,7 +109,6 @@ class UI(QtGui.QMainWindow):
         """
         self.setTimeLineFrameRange()
         self.setTimeLineDuration()
-
 
     def setTimeLineDuration(self):
         """
@@ -162,12 +172,10 @@ class UI(QtGui.QMainWindow):
         self.timeSlider.setValue(int(self.timeLine.currentFrame()))
 
     def run(self):
-        self.App.run()
+        self.App.run(self.graphicViewObj.nnConfig)
 
     def predict(self):
         self.App.predict()
-
-
         
     def setTimeSliderStart(self):
         self.timeSlider.setMinimum(int(self.startFrameSpinBox.value()))
@@ -176,24 +184,30 @@ class UI(QtGui.QMainWindow):
         self.timeSlider.setMaximum(int(self.endFrameSpinBox.value()))
 
     def populateConfigurationsList(self):
-        for item in self.trainingDataConfigs.dataObjects:
-            self.configurationsList.addItem(item.title)
+        self.configBaseName2Object = {}
+        for nnConfig in self.nnConfigs:
+            self.configurationsList.addItem(nnConfig.title)
+            self.configBaseName2Object[nnConfig.title] = nnConfig
+
+        for nnConfigName in self.configBaseName2Object.keys():
+            print "Key is: %s nnConfig is: %s"%(nnConfigName,self.configBaseName2Object[nnConfigName].title)
             
     def populateSceneList(self):
         """
-        poplulate list with all fbx files being used
-        by current nn configuration
+        populate list with all training and testing data (fbx scenes)
         """
-        self.basename2Object = {}
-        for item in self.trainingData.fbxScenes:
+        self.sceneBaseName2Object = {}
+        for item in self.App.fbxTrainingScenes:
             self.sceneList.addItem(item.basename)
             #a dict we can use to get the object given the basename
-            self.basename2Object[item.basename] = item
+            self.sceneBaseName2Object[item.basename] = item
+        
+        for item in self.App.fbxTestingScenes:
+            itemGuiName = item.basename+"testing"
+            self.sceneList.addItem(itemGuiName)
+            #a dict we can use to get the object given the basename
+            self.sceneBaseName2Object[itemGuiName] = item
 
-        for item in self.App.transformsFileManager.dataObjects:
-            self.sceneList.addItem(item.basename)
-            #a dict we can use to get the object given the basename
-            self.basename2Object[item.basename] = item
 
     def scaleTransforms(self):
         """
@@ -214,8 +228,8 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.showPredictedTransforms = self.predictedCheckbox.isChecked()
         self.graphicViewObj.updateGL()
 
-    def setShowCorrectTransforms(self):
-        self.graphicViewObj.showCorrectTransforms = self.correctCheckbox.isChecked()
+    def setShowRecompose(self):
+        self.graphicViewObj.showRecompose = self.recomposeCheckbox.isChecked()
         self.graphicViewObj.updateGL()
 
 
@@ -228,32 +242,56 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.showGrid = self.gridCheckbox.isChecked()
         self.graphicViewObj.updateGL()
 
+    def updateForConfigChange(self):
+        self.graphicViewObj.nnConfig = self.getNnConfig()
+        self.graphicViewObj.nnData = self.nnDataDict[self.graphicViewObj.nnConfig]
+        self.updateForSceneChange()
+
+    def updateForSceneChange(self):
+        self.graphicViewObj.scene = self.getScene()
+        self.startFrameSpinBox.setMinimum(self.graphicViewObj.scene.startTime)
+        self.startFrameSpinBox.setMaximum(self.graphicViewObj.scene.endTime)
+        self.startFrameSpinBox.setValue(self.graphicViewObj.scene.startTime)
+
+        self.endFrameSpinBox.setMinimum(self.graphicViewObj.scene.startTime)
+        self.endFrameSpinBox.setMaximum(self.graphicViewObj.scene.endTime)
+        self.endFrameSpinBox.setValue(self.graphicViewObj.scene.endTime)
+        self.graphicViewObj.updateGL()
 
     #Draw entire skeleton
     def drawCurrentFrame(self):
         print 'drawing'
-        self.graphicViewObj.scene = self.getFbxScene()
-
-        #TODO-I should only set these when the selected scene changes
-        self.startFrameSpinBox.setMinimum(self.graphicViewObj.scene.start)
-        self.startFrameSpinBox.setMaximum(self.graphicViewObj.scene.end)
-        self.startFrameSpinBox.setValue(self.graphicViewObj.scene.start)
-
-        self.endFrameSpinBox.setMinimum(self.graphicViewObj.scene.start)
-        self.endFrameSpinBox.setMaximum(self.graphicViewObj.scene.end)
-        self.endFrameSpinBox.setValue(self.graphicViewObj.scene.end)
-
+        #do I need to call this, or just self.graphicViewObj.updateGL()?
+        
         self.graphicViewObj.frame = int(self.timeSlider.value())
         self.graphicViewObj.updateGL()
 
-    def getFbxScene(self):
+    def getScene(self):
         selectedItems = self.sceneList.selectedItems()
         if len(selectedItems) > 0:
             item = selectedItems[0]
         else:
             item = self.sceneList.item(0)
         print "Scene is now: %s"%str(item.text())
-        return self.basename2Object[str(item.text())]
+        scene = self.sceneBaseName2Object[str(item.text())]
+        return self.sceneBaseName2Object[str(item.text())]
+
+    def getNnConfig(self):
+        selectedItems = self.configurationsList.selectedItems()
+        i = 0
+        for item in selectedItems:
+            print  str(i) + " " + item.text()
+            i = i+1
+        if len(selectedItems) > 0:
+            item = selectedItems[0]
+            print "selected is now: %s"%str(selectedItems[0].text())
+        else:
+            item = self.configurationsList.item(0)
+        
+        return self.configBaseName2Object[str(item.text())]
+
+    def getNNData(self):
+        return 
 
 class Viewer3DWidget(QGLWidget):
     def __init__(self, parent):
@@ -292,19 +330,19 @@ class Viewer3DWidget(QGLWidget):
             if self.scene.basename.endswith('.fbx'):
                 self.drawSkeleton()
             else:
-                self.scene.drawAtFrame(self.frame,self.transformScale)
+                self.scene.drawAtFrame(self.frame, self.transformScale)
         
         if self.showExtractedTransforms:
-            self.trainingData.drawExtractedTransformsAtFrame(self.scene,self.frame,self.transformScale)
+            self.nnData.drawExtractedTransformsAtFrame(self.scene, self.frame, self.transformScale)
 
         if self.showManipulatedTransforms:
-            self.trainingData.drawManipulatedTransformsAtFrame(self.scene,self.frame,self.transformScale)
+            self.nnData.drawManipulatedTransformsAtFrame(self.scene ,self.frame, self.transformScale)
 
         if self.showPredictedTransforms:
-            self.testingData.drawPredictedTransformsAtFrame(self.frame)
+            self.nnData.drawPredictedAtFrame(self.scene, self.frame)
 
-        if self.showCorrectTransforms:
-            self.testingData.drawCorrectTransformsAtFrame(self.frame)
+        if self.showRecompose:
+            self.nnData.drawRecomposeAtFrame(self.scene, self.frame)
         
         glFlush()
 
@@ -352,7 +390,6 @@ class Viewer3DWidget(QGLWidget):
         glColor3f(1.0,1.0,1.0);
         glLineWidth(1)
         glBegin(GL_LINE_STRIP)
-
         self.drawSkeltonLines(self.scene.jointRoot,0)
         glEnd()
         self.drawSkeletonTransforms()
