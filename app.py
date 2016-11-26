@@ -14,6 +14,7 @@ from PyQt4 import QtGui
 import os
 import random
 import json
+import threading
 
 
 # Application class
@@ -33,16 +34,29 @@ class App(object):
             nnDataObj = nnData(nnConfig, self.fbxTrainingScenes)
             self.nnTrainDataDict[nnConfig] = nnDataObj
             self.nns[nnConfig] = NN(nnDataObj)
+        self.threadId = 0
 
     def runAll(self):
         for nnConfig in self.nns.keys():
-            self.nns[nnConfig].run()
+            nn = self.nns[nnConfig]
+            nnThread(self.threadId,nn).start()
+            self.threadId = self.threadId + 1
         
 
     def run(self,nnConfig):
-        self.nns[nnConfig].run()
+        nn = self.nns[nnConfig]
+        nnThread(self.threadId,nn).start()
+        self.threadId = self.threadId + 1
 
 
-
-
+class nnThread (threading.Thread):
+    def __init__(self, threadId, nn):
+        threading.Thread.__init__(self)
+        self.threadID = threadId
+        self.name = nn.name
+        self.nn = nn
+    def run(self):
+        print "=======================Starting " + self.name + " ======================================="
+        self.nn.run()
+        print "=======================Exiting " + self.name + " ======================================="
 

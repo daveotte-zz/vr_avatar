@@ -19,6 +19,7 @@ class NN(object):
     def __init__(self,nnData):
         self.nnData = nnData
         self.nnConfig = nnData.nnConfig
+        self.name = self.nnConfig.name
 
     def run(self):
         self.nnData.write()

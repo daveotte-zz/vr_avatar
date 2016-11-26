@@ -3,6 +3,10 @@ import numpy as np
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 
+pyListType = type([])
+npListType = type(np.arange(1))
+npMxType = type(np.matrix(1))
+
 def fbxMxtoList(fbxMx):
     """
     Convert an fbx matrix to a python list.
@@ -18,7 +22,7 @@ def listToNumpyMx(mxList):
     """
     Convert a normal python list to numpy matrix
     """
-    return np.matrix(mxList)
+    return np.matrix(mxList).reshape(4,4)
 
 def fbxMxtoNumpyMx(fbxMx):
     """
@@ -88,7 +92,7 @@ def setPos(mx4, v3):
     return mx4
 
 
-def drawMx(mx,transformScale):
+def drawMx(mx,transformScale=1.0):
     """
     Draw a numpy matrix.
     """

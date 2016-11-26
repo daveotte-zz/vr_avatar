@@ -3,208 +3,208 @@
         [
 
             {
-                "name":"config",
-                "referenceFbx":"/home/daveotte/work/mocap_animations/01/01_02.fbx"
+                "name": "config",
+                "referenceFbx": "/home/daveotte/work/mocap_animations/01/01_02.fbx"
             },
             {
-                "name":"playground",
+                "name": "playground",
                 "index":1,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/01/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/01/FBX_2013"
             },
             {
-                "name":"walkPunchStrike",
+                "name": "walkPunchStrike",
                 "index":2,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/02/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/02/FBX_2013"
             },
             {
-                "name":"walkUnevenTerrain",
+                "name": "walkUnevenTerrain",
                 "index":3,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/03/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/03/FBX_2013"
             },
             {
-                "name":"modernDance",
+                "name": "modernDance",
                 "index":5,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/05/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/05/FBX_2013"
             },
             {
-                "name":"basketBall",
+                "name": "basketBall",
                 "index":6,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/06/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/06/FBX_2013"
             },
             {
-                "name":"walk1",
+                "name": "walk1",
                 "index":7,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/07/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/07/FBX_2013"
             },
             {
-                "name":"walk2",
+                "name": "walk2",
                 "index":8,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/08/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/08/FBX_2013"
             },
             {
-                "name":"run",
+                "name": "run",
                 "index":9,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/09/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/09/FBX_2013"
             },
             {
-                "name":"soccer",
+                "name": "soccer",
                 "index":10,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/10/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/10/FBX_2013"
             },
             {
-                "name":"kickBall",
+                "name": "kickBall",
                 "index":11,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/11/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/11/FBX_2013"
             },
             {
-                "name":"taiChi",
+                "name": "taiChi",
                 "index":12,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/12/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/12/FBX_2013"
             },
             {
-                "name":"everyDayBehaviors",
+                "name": "everyDayBehaviors",
                 "index":13,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/13/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/13/FBX_2013"
             },
             {
-                "name":"everyDayBehaviors2",
+                "name": "everyDayBehaviors2",
                 "index":14,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/14/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/14/FBX_2013"
             },
             {
-                "name":"everyDayBehaviorsDance",
+                "name": "everyDayBehaviorsDance",
                 "index":15,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/15/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/15/FBX_2013"
             },
             {
-                "name":"walkingStyles",
+                "name": "walkingStyles",
                 "index":16,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/16/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/16/FBX_2013"
             },
             {
-                "name":"communicationA",
+                "name": "communicationA",
                 "index":17,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/17/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/17/FBX_2013"
             },
             {
-                "name":"communicationA",
+                "name": "communicationA",
                 "index":18,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/18/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/18/FBX_2013"
             },
             {
-                "name":"communicationB",
+                "name": "communicationB",
                 "index":19,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/19/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/19/FBX_2013"
             },
             {
-                "name":"interactionPlayA",
+                "name": "interactionPlayA",
                 "index":20,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/20/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/20/FBX_2013"
             },        
             {
-                "name":"interactionPlayB",
+                "name": "interactionPlayB",
                 "index":21,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/21/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/21/FBX_2013"
             },          
             {
-                "name":"interactionA",
+                "name": "interactionA",
                 "index":22,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/22/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/22/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":23,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/23/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/23/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":24,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/24/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/24/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":25,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/25/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/25/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":26,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/26/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/26/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":27,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/27/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/27/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":28,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/28/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/28/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":29,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/29/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/29/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":30,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/30/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/30/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":31,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/31/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/31/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":32,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/32/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/32/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":33,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/33/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/33/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":34,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/34/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/34/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":35,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/35/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/35/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":36,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/36/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/36/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":37,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/37/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/37/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":38,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/38/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/38/FBX_2013"
             },
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":39,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/39/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/39/FBX_2013"
             },         
             {
-                "name":"interactionB",
+                "name": "interactionB",
                 "index":40,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/40/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/40/FBX_2013"
             },                  
             {
-                "name":"test",
+                "name": "test",
                 "index":0,
-                "dir":"/home/daveotte/work/mocap_animations_with_binary/test"
+                "dir": "/home/daveotte/work/mocap_animations_with_binary/test"
             }
         ],
 
@@ -212,29 +212,34 @@
         [
 
             {
-                "name":"viveCapture",
-                "fileName":"/home/daveotte/work/vr_avatar/HMDtransforms.txt"
+                "name": "viveCapture",
+                "fileName": "/home/daveotte/work/vr_avatar/HMDtransforms.txt"
             }
         ],
-    "trainingGroupIndices":[22,21],
-    "testingGroupIndices":[25,26],
-    "nnConfigs":["predictElbow","predictShldr"],
-    "dataGroup":
-        [
-            {
-                "name":"trainingData",
-                "fbxGroupIndices":[1, 2, 3]
-            },
-            {
-                "name":"testingData",
-                "fbxGroupIndices":[23,24]
-            }
-        ],
+    "trainingGroupIndices": [2],
+    "testingGroupIndices": [1],
+    "nnConfigs": ["predictShldr", "predictHip"],
     "nnConfigData":
         [
 
             {
-                "name":"predictShldr",
+                "name": "predictHip",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["hip", "world"] 
+                        ],
+                "method": "predictHip",
+                "weightsFileName": "/home/daveotte/work/nn_weights/predictHip.h5",
+                "nnFileName": "/home/daveotte/work/nn_weights/predictHip.json",
+                "outputCsvFileName": "/home/daveotte/work/predictHipOutput.csv",
+                "epochs": 100,
+                "timeMode": 24
+            },
+            {
+                "name": "predictShldr",
                 "transforms":
                         [   
                             ["head", "world"],
@@ -242,15 +247,15 @@
                             ["lHand", "world"],    
                             ["rShldr", "world"] 
                         ],
-                "method":"predictShldr",
-                "weightsFileName":"/home/daveotte/work/nn_weights/predictShldr.h5",
-                "nnFileName":"/home/daveotte/work/nn_weights/predictShldr.json",
-                "outputCsvFileName":"/home/daveotte/work/predictElbowOutput.csv",
-                "epochs":1,
-                "timeMode":24
+                "method": "predictShldr",
+                "weightsFileName": "/home/daveotte/work/nn_weights/predictShldr.h5",
+                "nnFileName": "/home/daveotte/work/nn_weights/predictShldr.json",
+                "outputCsvFileName": "/home/daveotte/work/predictElbowOutput.csv",
+                "epochs": 100,
+                "timeMode": 24
             },
             {
-                "name":"predictElbow",
+                "name": "predictElbow",
                 "transforms":
                         [   
                             ["head", "world"],
@@ -259,12 +264,12 @@
                             ["rForeArm", "world"] 
 
                         ],
-                "method":"predictElbow",
-                "weightsFileName":"/home/daveotte/work/nn_weights/predictElbow.h5",
-                "nnFileName":"/home/daveotte/work/nn_weights/predictElbow.json",
-                "outputCsvFileName":"/home/daveotte/work/predictElbowOutput.csv",
-                "epochs":1,
-                "timeMode":24
+                "method": "predictElbow",
+                "weightsFileName": "/home/daveotte/work/nn_weights/predictElbow.h5",
+                "nnFileName": "/home/daveotte/work/nn_weights/predictElbow.json",
+                "outputCsvFileName": "/home/daveotte/work/predictElbowOutput.csv",
+                "epochs": 100,
+                "timeMode": 24
             }        
        ]
 }
