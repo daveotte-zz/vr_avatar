@@ -64,7 +64,7 @@ class UI(QtGui.QMainWindow):
 
         #####TRAINING
         self.trainPushButton.pressed.connect(self.run)
-        self.predictPushButton.pressed.connect(self.predict)
+        self.terminatePushButton.pressed.connect(self.terminate)
 
         #####SET WHAT'S CURRENT INITIALLY
         self.graphicViewObj.scene = self.getScene()
@@ -173,6 +173,9 @@ class UI(QtGui.QMainWindow):
 
     def run(self):
         self.App.run(self.graphicViewObj.nnConfig)
+
+    def terminate(self):
+        self.App.terminate(self.graphicViewObj.nnConfig)
 
     def predict(self):
         self.App.predict()

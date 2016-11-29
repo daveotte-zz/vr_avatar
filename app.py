@@ -1,5 +1,7 @@
-
-
+from multiprocessing import Process
+from lib.nn import NN
+from ui.gui import UI
+import sys
 import sys
 from lib.data import *
 from lib.nn import *
@@ -28,35 +30,64 @@ class App(object):
 
         self.nnTestDataDict = {}
         self.nnTrainDataDict = {}
-        self.nns = {}
+        self.nns = []
         for nnConfig in self.nnConfigs:
             #self.nnTestDataDict[nnConfig] = nnData(nnConfig, fbxTestingScenes)
             nnDataObj = nnData(nnConfig, self.fbxTrainingScenes)
             self.nnTrainDataDict[nnConfig] = nnDataObj
-            self.nns[nnConfig] = NN(nnDataObj)
-        self.threadId = 0
-
-    def runAll(self):
-        for nnConfig in self.nns.keys():
-            nn = self.nns[nnConfig]
-            nnThread(self.threadId,nn).start()
-            self.threadId = self.threadId + 1
+            self.nns.append(NN(nnDataObj))
         
 
     def run(self,nnConfig):
-        nn = self.nns[nnConfig]
-        nnThread(self.threadId,nn).start()
-        self.threadId = self.threadId + 1
+        #find the right nn
+        nn = self.getNnByNnConfig(nnConfig)
+        nn.job = Process(target=runNN, args=(nn,))
+        nn.job.start()
+
+    def terminate(self,nnConfig):
+        #find the right nn
+        nn = self.getNnByNnConfig(nnConfig)
+        print "========================Terminating: %s========================"%(nn.nnConfig.name)
+        nn.job.terminate()
 
 
-class nnThread (threading.Thread):
-    def __init__(self, threadId, nn):
-        threading.Thread.__init__(self)
-        self.threadID = threadId
-        self.name = nn.name
-        self.nn = nn
-    def run(self):
-        print "=======================Starting " + self.name + " ======================================="
-        self.nn.run()
-        print "=======================Exiting " + self.name + " ======================================="
+    def getNnByNnConfig(self,nnConfig):
+        for nn in self.nns:
+            if nnConfig.name == nn.nnConfig.name:
+                return nn
 
+def runNN(nn):
+    print "========================Training: %s========================"%(nn.nnConfig.name)
+    nn.run()
+    print "========================Finished training: %s========================"%(nn.nnConfig.name)
+
+
+'''
+def main(args):
+    if len(args)==1:
+        args.append("-gui")
+    app = App()
+
+    if args[1] == "-noGui":
+        for nn in app.nns:
+            p = Process(target=runNN, args=(nn,))
+            p.start()
+    else:
+        ApplicationUI = UI(app)
+'''
+
+if __name__ == "__main__":
+    if len(sys.argv)==1:
+        sys.argv.append("-gui")
+    app = App()
+    if sys.argv[1] == "-noGui":
+        #train all nn's
+        for nn in app.nns:
+            nn.job = Process(target=runNN, args=(nn,))
+            nn.job.start()
+    else:
+        ApplicationUI = UI(app)
+
+
+
+   #main(sys.argv)
