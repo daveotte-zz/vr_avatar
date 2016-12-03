@@ -265,9 +265,3 @@ class predictHip(object):
             mxUtil.drawMx(mx,self.transformScale)
         mxUtil.drawPos(self.drawPos)
 
-
-    def draw(self):
-        for mx in self.drawMxs:
-            mxUtil.drawMx(mx,self.transformScale)
-        mxUtil.drawPos(self.drawPos)
-

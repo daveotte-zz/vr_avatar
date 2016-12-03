@@ -16,7 +16,8 @@ from PyQt4 import QtGui
 import os
 import random
 import json
-import threading
+import time
+from threading import Thread
 
 
 # Application class
@@ -26,26 +27,30 @@ class App(object):
         self.fbxTrainingScenes  = fbxManager(jsonNodes['trainingGroupIndices']).fbxScenes
         self.fbxTestingScenes   = fbxManager(jsonNodes['testingGroupIndices']).fbxScenes
 
+        #initializing takes a long time if done one at a time, so:
+        '''ls
+        for fbxScene in self.fbxTrainingScenes:
+            fbxScene.thread = Thread(target=self.initializeFbxScene, args=(fbxScene,))
+            fbxScene.thread.start()
+        '''
         self.nnConfigs          = nnConfigDataManager(jsonNodes['nnConfigs']).nnConfigs
 
         self.nnTestDataDict = {}
         self.nnTrainDataDict = {}
         self.nns = []
         for nnConfig in self.nnConfigs:
-            #self.nnTestDataDict[nnConfig] = nnData(nnConfig, fbxTestingScenes)
+            #store nn's as dict (self.nnTest/TrainDataDict), AND a list (self.nns)
             nnDataObj = nnData(nnConfig, self.fbxTrainingScenes)
             self.nnTrainDataDict[nnConfig] = nnDataObj
             self.nns.append(NN(nnDataObj))
         
-
     def run(self,nnConfig):
-        #find the right nn
         nn = self.getNnByNnConfig(nnConfig)
-        nn.job = Process(target=runNN, args=(nn,))
-        nn.job.start()
+        nn.run()
+        #nn.job = Process(target=runNN, args=(nn,))
+        #nn.job.start()
 
     def terminate(self,nnConfig):
-        #find the right nn
         nn = self.getNnByNnConfig(nnConfig)
         print "========================Terminating: %s========================"%(nn.nnConfig.name)
         nn.job.terminate()
@@ -53,28 +58,16 @@ class App(object):
 
     def getNnByNnConfig(self,nnConfig):
         for nn in self.nns:
-            if nnConfig.name == nn.nnConfig.name:
+            if nnConfig.name == nn.nnData.nnConfig.name:
                 return nn
+
+    def initializeFbxScene(self,fbxScene):
+        fbxScene.initialize()
 
 def runNN(nn):
     print "========================Training: %s========================"%(nn.nnConfig.name)
     nn.run()
     print "========================Finished training: %s========================"%(nn.nnConfig.name)
-
-
-'''
-def main(args):
-    if len(args)==1:
-        args.append("-gui")
-    app = App()
-
-    if args[1] == "-noGui":
-        for nn in app.nns:
-            p = Process(target=runNN, args=(nn,))
-            p.start()
-    else:
-        ApplicationUI = UI(app)
-'''
 
 if __name__ == "__main__":
     if len(sys.argv)==1:

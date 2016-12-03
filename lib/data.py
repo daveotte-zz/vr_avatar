@@ -1,3 +1,4 @@
+from multiprocessing import Process
 
 import os
 import json
@@ -8,6 +9,7 @@ import re
 import matrixUtil as mxUtil
 import operations as op
 from path import Path
+from threading import Thread
 
 sys.path.append('/usr/local/lib/python2.7/site-packages/ImportScene')
 sys.path.append('/usr/local/lib/python2.7/site-packages')
@@ -342,7 +344,7 @@ class nnData(object):
         operationClass = getattr(op, self.nnConfig.method)
         self.operation = operationClass()
         
-        self.model = self.loadModel()
+        self.loadModel()
         
         self.setData()
 
@@ -357,18 +359,19 @@ class nnData(object):
         self.outputStart = self.inputEnd  
         self.outputEnd = self.outputStart + len(outputLinePortion)    
         self.data = data
-        self.model = self.loadModel()
 
     def loadModel(self):
-        if os.path.isfile(self.nnConfig.nnFileName) and os.path.isfile(self.nnConfig.weightsFileName):
-            print "Loading model: %s and %s"%(self.nnConfig.nnFileName, self.nnConfig.weightsFileName)
-            jsonFile = open(self.nnConfig.nnFileName,'r')
+        if self.nnConfig.readNnFile.isfile() and self.nnConfig.readWeightsFile.isfile():
+            print "Loading model: %s and %s"%(self.nnConfig.readNnFile, self.nnConfig.readWeightsFile)
+            jsonFile = open(self.nnConfig.readNnFile,'r')
             jsonString = jsonFile.read().replace('\n', '')
             model = model_from_json(jsonString)
-            model.load_weights(self.nnConfig.weightsFileName)
-            return model 
+            model.load_weights(self.nnConfig.readWeightsFile)
+            self.model =  model 
         else:
-            return Sequential()
+            self.model = Sequential()
+
+
         
     def extractedTransforms(self):
         """
@@ -377,7 +380,6 @@ class nnData(object):
         """
         bigTransformList = []
         for scene in self.fbxScenes:
-
             bigTransformList =  bigTransformList + self.extractedTransformsOverFrameRange(scene,\
                                                                                 scene.startTime,\
                                                                                 scene.endTime+1)
@@ -471,8 +473,58 @@ class nnConfigDataManager(dataManager):
 class nnConfigData(baseData):
     def __init__(self, jsonNode):
         baseData.__init__(self, jsonNode) 
+        self.setUpLoadPaths()
+
+    def setUpLoadPaths(self):
+        pathBase = self.logDir + "/" + self.name + "/trial_"
+        self.checkDir(pathBase,0)
+
+        self.weightsFileBaseName = self.name+".h5"
+        self.nnFileBaseName = self.name+".json"
+
+        self.writeWeightsFile = self.writeDir+"/"+self.weightsFileBaseName
+        self.writeNnFile = self.writeDir+"/"+self.nnFileBaseName
+        self.readWeightsFile = self.readDir+"/"+self.weightsFileBaseName
+        self.readNnFile = self.readDir+"/"+self.nnFileBaseName
+
+        self.configFile = "/home/daveotte/work/vr_avatar/lib/config.json"
+        self.writeConfigFile = self.writeDir+"/config.json"
+
+        self.operationsFile = "/home/daveotte/work/vr_avatar/lib/operations.py"
+        self.writeOperationsFile = self.writeDir+"/operations.py"
 
 
+        self.writeLogFile = self.writeDir+"/"+self.name+"_log.txt"
+
+        print "Setting write file: %s"%(self.writeWeightsFile)
+        print "Setting read file: %s"%(self.readWeightsFile)
+        
+    def checkDir(self,pathBase,i):
+        suffix = '%03d'%i
+        logDir = Path(pathBase+str(suffix))
+        nextId = i+1
+        prevId = i-1
+        print "Checking isdir: " + str(logDir.abspath())
+        if os.path.isdir(str(logDir.abspath())):
+            self.checkDir(pathBase,nextId)
+        else:
+            self.writeDir = logDir.makedirs()  
+            suffix = '%03d'%prevId  
+            self.readDir = Path(pathBase+str(suffix))
+            #if this is dir 0 (the first trial ever), then we share the same read/write dir
+            if not self.readDir.isdir():   
+                self.readDir = self.writeDir
+
+
+
+
+
+
+        #is the logDir there? No? then make it.
+        #yes, then is nnConfig.name0 there? no, then make it, and make it both read and write dir
+        #else      is nnConfig.name1 there? yes
+                #is nnConfig.name2 there? yes
+                #is nnConfig.name3 there? no, then name2 is read dir, and make name3 as write dir
 
 def camel2Title(camel):
     return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', camel).title()

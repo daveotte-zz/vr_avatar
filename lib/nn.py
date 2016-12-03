@@ -12,14 +12,13 @@ from ui import gui
 from PyQt4 import QtGui
 import os
 import random
-
+from shutil import copyfile
 
 
 class NN(object):
     def __init__(self,nnData):
         self.nnData = nnData
-        self.nnConfig = nnData.nnConfig
-        self.name = self.nnConfig.name
+        self.name = self.nnData.nnConfig.name
 
     def run(self):
         self.nnData.write()
@@ -31,25 +30,31 @@ class NN(object):
         
         inputData, outputData = self.data()
         model = self.model()
-        model.fit(inputData,outputData, nb_epoch=self.nnConfig.epochs, batch_size=1)
+        model.fit(inputData,outputData, nb_epoch=self.nnData.nnConfig.epochs, batch_size=1)
         self.write(model)
 
-    def write(self,model):
-        if os.path.isfile(self.nnConfig.weightsFileName):
-            os.remove(self.nnConfig.weightsFileName)
-        
-        print "Writing: %s"%(self.nnConfig.weightsFileName)
-        model.save_weights(self.nnConfig.weightsFileName)
+    def write(self,model):        
+        print "Writing: %s"%(self.nnData.nnConfig.writeWeightsFile)
+        model.save_weights(self.nnData.nnConfig.writeWeightsFile)
 
-        if os.path.isfile(self.nnConfig.nnFileName):
-            os.remove(self.nnConfig.nnFileName)
-        jsonFile = open(self.nnConfig.nnFileName,'w')
 
-        print "Writing: %s"%(self.nnConfig.nnFileName)
+        jsonFile = open(self.nnData.nnConfig.writeNnFile,'w')
+
+        print "Writing: %s"%(self.nnData.nnConfig.writeNnFile)
         jsonFile.write(model.to_json())
         jsonFile.close()
+
+        print "Copying config: %s"%self.nnData.nnConfig.configFile
+        copyfile(self.nnData.nnConfig.configFile, self.nnData.nnConfig.writeConfigFile)
+
+        print "Copying operations.py: %s"%self.nnData.nnConfig.operationsFile
+        copyfile(self.nnData.nnConfig.operationsFile, self.nnData.nnConfig.writeOperationsFile)
+
+        print "Ticking up the write/read paths."
+        self.nnData.nnConfig.setUpLoadPaths()
         print "Reloading NN models."
         self.nnData.loadModel()
+
 
     def data(self):
         seed = 7
