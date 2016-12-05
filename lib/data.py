@@ -477,10 +477,12 @@ class nnConfigData(baseData):
 
     def setUpLoadPaths(self):
         pathBase = self.logDir + "/" + self.name + "/trial_"
-        self.checkDir(pathBase,0)
 
         self.weightsFileBaseName = self.name+".h5"
         self.nnFileBaseName = self.name+".json"
+        
+        #dave- check for file, not just directory
+        self.checkDir(pathBase,0)
 
         self.writeWeightsFile = self.writeDir+"/"+self.weightsFileBaseName
         self.writeNnFile = self.writeDir+"/"+self.nnFileBaseName
@@ -508,7 +510,7 @@ class nnConfigData(baseData):
         if os.path.isdir(str(logDir.abspath())):
             self.checkDir(pathBase,nextId)
         else:
-            self.writeDir = logDir.makedirs()  
+            self.writeDir = logDir
             suffix = '%03d'%prevId  
             self.readDir = Path(pathBase+str(suffix))
             #if this is dir 0 (the first trial ever), then we share the same read/write dir

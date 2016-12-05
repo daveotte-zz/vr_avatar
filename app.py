@@ -52,7 +52,7 @@ class App(object):
 
     def terminate(self,nnConfig):
         nn = self.getNnByNnConfig(nnConfig)
-        print "========================Terminating: %s========================"%(nn.nnConfig.name)
+        print "========================Terminating: %s========================"%(nn.nnData.nnConfig.name)
         nn.job.terminate()
 
 
@@ -65,9 +65,9 @@ class App(object):
         fbxScene.initialize()
 
 def runNN(nn):
-    print "========================Training: %s========================"%(nn.nnConfig.name)
+    print "========================Training: %s========================"%(nn.nnData.nnConfig.name)
     nn.run()
-    print "========================Finished training: %s========================"%(nn.nnConfig.name)
+    print "========================Finished training: %s========================"%(nn.nnData.nnConfig.name)
 
 if __name__ == "__main__":
     if len(sys.argv)==1:

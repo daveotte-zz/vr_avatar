@@ -11,6 +11,7 @@ from keras.layers.normalization import BatchNormalization
 from ui import gui
 from PyQt4 import QtGui
 import os
+from path import Path
 import random
 from shutil import copyfile
 
@@ -33,7 +34,11 @@ class NN(object):
         model.fit(inputData,outputData, nb_epoch=self.nnData.nnConfig.epochs, batch_size=1)
         self.write(model)
 
-    def write(self,model):        
+    def write(self,model):
+        writeDir = self.nnData.nnConfig.writeWeightsFile.dirname()
+        print "Making log dir: %s"%(writeDir)
+        writeDir.makedirs()
+
         print "Writing: %s"%(self.nnData.nnConfig.writeWeightsFile)
         model.save_weights(self.nnData.nnConfig.writeWeightsFile)
 
