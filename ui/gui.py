@@ -99,6 +99,17 @@ class UI(QtGui.QMainWindow):
         self.transformScaleSlider.valueChanged.connect(self.scaleTransforms)
 
 
+
+    def keyPressEvent(self, event):
+        print "Key Pressed."
+        if event.key() == QtCore.Qt.Key_Left or event.key() == QtCore.Qt.Key_N:
+            print "Back 1 frame."
+            self.timeLine.setCurrentTime(self.timeLine.currentTime()-self.timeForOneFrame)
+            #self.timeLine.setValue(int(self.timeLine.currentFrame())-1)
+        elif event.key() == QtCore.Qt.Key_Right or event.key() == QtCore.Qt.Key_M:
+            print "Forward 1 frame."
+            self.timeLine.setCurrentTime(self.timeLine.currentTime()+self.timeForOneFrame)
+
     def setTimeLineCurrentFrame(self):
         self.timeLine.setCurrentTime(self.timeForOneFrame*int(self.timeSlider.value()))
 
@@ -339,7 +350,7 @@ class Viewer3DWidget(QGLWidget):
             self.nnData.drawExtractedTransformsAtFrame(self.scene, self.frame, self.transformScale)
 
         if self.showManipulatedTransforms:
-            self.nnData.drawManipulatedTransformsAtFrame(self.scene ,self.frame, self.transformScale)
+            self.nnData.drawManipulatedTransformsAtFrame(self.scene, self.frame, self.transformScale)
 
         if self.showPredictedTransforms:
             self.nnData.drawPredictedAtFrame(self.scene, self.frame)

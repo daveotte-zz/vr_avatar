@@ -244,9 +244,6 @@
                         ],
                 "method": "predictShldr",
                 "logDir":"/home/daveotte/work/trials",
-                "weightsFileName": "/home/daveotte/work/nn_weights/predictShldr.h5",
-                "nnFileName": "/home/daveotte/work/nn_weights/predictShldr.json",
-                "outputCsvFileName": "/home/daveotte/work/predictElbowOutput.csv",
                 "epochs": 1
             },
             {
@@ -261,13 +258,55 @@
                         ],
                 "method": "predictElbow",
                 "logDir":"/home/daveotte/work/trials",
-                "weightsFileName": "/home/daveotte/work/nn_weights/predictElbow.h5",
-                "nnFileName": "/home/daveotte/work/nn_weights/predictElbow.json",
-                "outputCsvFileName": "/home/daveotte/work/predictElbowOutput.csv",
                 "epochs": 1
-            }        
+            },
+            {
+                "name": "predictEverything",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["hip", "world"],    
+                            ["abdomen", "world"],    
+                            ["chest", "world"],    
+                            ["neck", "world"],    
+                            ["rCollar", "world"],    
+                            ["rShldr", "world"],    
+                            ["rForeArm", "world"],     
+                            ["rButtock", "world"],    
+                            ["rThigh", "world"],    
+                            ["rShin", "world"],    
+                            ["rFoot", "world"],    
+                            ["rForeArm", "world"],
+                            ["lCollar", "world"],    
+                            ["lShldr", "world"],    
+                            ["lForeArm", "world"],       
+                            ["lButtock", "world"],    
+                            ["lThigh", "world"],    
+                            ["lShin", "world"],    
+                            ["lFoot", "world"],    
+                            ["lForeArm", "world"]
+                        ],
+                "method": "predictEverything",
+                "logDir":"/home/daveotte/work/trials",
+                "epochs": 100
+            },
+            {
+                "name": "predictElbowsVel",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rForeArm", "world"]
+                        ],
+                "method": "predictElbowsVel",
+                "logDir":"/home/daveotte/work/trials",
+                "epochs": 1
+            }      
        ],
-    "trainingGroupIndices": [2],
-    "testingGroupIndices": [10,23,24,12,13,39],
-    "nnConfigs": ["predictHip","predictElbow","predictShldr"]
+    "trainingGroupIndices": [2, 3],
+    "testingGroupIndices": [10,23,24,12,13,39,38],
+    "nnConfigs": ["predictEverything","predictElbowsVel"]
 }

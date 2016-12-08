@@ -328,8 +328,8 @@ class fbxScene(object):
         return v3      
 
     def destroy(self):
-        if self.initialized:
-            print 'destroy'
+        if not self.needsInitializing:
+            print 'Destroy: ' + self.basename
             self.lSdkManager.Destroy()
         self.needsInitializing = True
 
@@ -383,6 +383,7 @@ class nnData(object):
             bigTransformList =  bigTransformList + self.extractedTransformsOverFrameRange(scene,\
                                                                                 scene.startTime,\
                                                                                 scene.endTime+1)
+            #scene.destroy()
         return bigTransformList
 
     def extractedTransformsOverFrameRange(self,scene,start,end):
@@ -409,24 +410,37 @@ class nnData(object):
             mxUtil.drawMx(mx,transformScale)
 
     def drawPredictedAtFrame(self,scene,frame):
+        print "draw predicted at frame: %d"%(frame)
         inputArray, outputArray = self.operation.operate(self.extractedTransformsAtFrame(scene,frame))
+        print "the input array is: " + str(inputArray)
         predictedOutputArray = self.model.predict_on_batch(np.array([inputArray]))
+
+        #give the prediction back to the operation object in case it's needed for the next prediction
+        self.operation.predictionOutputArray = predictedOutputArray[0]
+
         self.operation.predict(predictedOutputArray[0])
         self.operation.drawPredict()
 
     def drawRecomposeAtFrame(self,scene,frame):
+        print "draw recomposed at frame: %d"%(frame)
         inputArray, outputArray = self.operation.operate(self.extractedTransformsAtFrame(scene,frame))
         predictedOutputArray = self.model.predict_on_batch(np.array([inputArray]))
         self.operation.recompose(predictedOutputArray[0])
         self.operation.drawRecompose()
 
     def drawManipulatedTransformsAtFrame(self,scene,frame,transformScale):
+        print "draw manipulated at frame: %d"%(frame)
         self.operation.operate(self.extractedTransformsAtFrame(scene,frame))
         self.operation.transformScale = transformScale
         self.operation.draw()
 
     def write(self):
-        dataFile = open(self.nnConfig.outputCsvFileName,'w')
+        writeDir = self.nnConfig.writeCsvFile.dirname()
+        if not writeDir.isdir():
+            print "Making log dir: %s"%(writeDir)
+            writeDir.makedirs()
+
+        dataFile = open(self.nnConfig.writeCsvFile,'w')
         for line in self.data:
             #convert line to string. 
             l = ', '.join(str(ln) for ln in line)
@@ -454,11 +468,7 @@ class transformsFiles(baseData):
 
 
 
-'''
-Why make these classes? To avoid writing a many
-lines of code to specify we want the base class 'dataManager'
-instead of the subclass, here named 'nnConfigDataManager'.
-'''
+
 class nnConfigDataManager(dataManager):
     def __init__(self, configNames, dataType="nnConfigData"):
         dataManager.__init__(self, dataType) 
@@ -497,6 +507,7 @@ class nnConfigData(baseData):
 
 
         self.writeLogFile = self.writeDir+"/"+self.name+"_log.txt"
+        self.writeCsvFile = self.writeDir+"/"+self.name+"_output.csv"
 
         print "Setting write file: %s"%(self.writeWeightsFile)
         print "Setting read file: %s"%(self.readWeightsFile)

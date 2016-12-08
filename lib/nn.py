@@ -36,16 +36,17 @@ class NN(object):
 
     def write(self,model):
         writeDir = self.nnData.nnConfig.writeWeightsFile.dirname()
-        print "Making log dir: %s"%(writeDir)
-        writeDir.makedirs()
+        if not writeDir.isdir():
+            print "Making log dir: %s"%(writeDir)
+            writeDir.makedirs()
 
         print "Writing: %s"%(self.nnData.nnConfig.writeWeightsFile)
         model.save_weights(self.nnData.nnConfig.writeWeightsFile)
 
 
-        jsonFile = open(self.nnData.nnConfig.writeNnFile,'w')
-
+ 
         print "Writing: %s"%(self.nnData.nnConfig.writeNnFile)
+        jsonFile = open(self.nnData.nnConfig.writeNnFile,'w')
         jsonFile.write(model.to_json())
         jsonFile.close()
 

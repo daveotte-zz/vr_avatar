@@ -80,7 +80,7 @@ def getPosArray(mx4):
 
 def getTransformArray(mx4):
     """
-    Return mx4 and np array of 16 numbers.
+    Convert mx4 to np array of 16 numbers.
     """
     return mx4.flatten().getA()[0]
 
@@ -134,4 +134,16 @@ def drawPos(v3,size=6,color=[1.0,1.0,0.0]):
     glBegin(GL_POINTS)
     glColor3f(color[0],color[1],color[2])
     glVertex3f(v3[0],v3[1],v3[2]);
+    glEnd()
+
+def drawLine(pointA, pointB, size=1,color=[1.0,1.0,1.0]):
+    """
+    Draw a line (a dot) given two v3's
+    """
+    glLineWidth(size)
+    glBegin(GL_LINE_STRIP)
+    
+    glColor3f(color[0],color[1],color[2]);
+    glVertex3fv([pointA[0],pointA[1],pointA[2]])
+    glVertex3fv([pointB[0],pointB[1],pointB[2]])
     glEnd()
