@@ -474,7 +474,7 @@ class predictElbowsVel(object):
 
         #outputArray = np.array(posList).flatten()
 
-        inputArray = mxUtil.getTransformArray(rHandMx4Origin).tolist() + mxUtil.getRotArray(headMx4Origin).tolist() + mxUtil.getTransformArray(lHandMx4Origin).tolist()
+        inputArray = mxUtil.getTransformArray(rHandMx4Origin,True).tolist() + mxUtil.getRotArray(headMx4Origin).tolist() + mxUtil.getTransformArray(lHandMx4Origin,True).tolist()
         inputArray = inputArray + headPos_1.tolist() + rHandPos_1.tolist() + lHandPos_1.tolist() + rForeArmPos_1.tolist()
 
         self.drawMxs = [rHandMx4Origin,headMx4Origin,lHandMx4Origin]

@@ -78,11 +78,14 @@ def getPosArray(mx4):
     """
     return mx4[3:4,0:3].flatten().getA()[0]
 
-def getTransformArray(mx4):
+def getTransformArray(mx4,exclude4thColumn=False):
     """
     Convert mx4 to np array of 16 numbers.
     """
-    return mx4.flatten().getA()[0]
+    if exclude4thColumn:
+        return mx4[0:4,0:3].flatten().getA()[0]
+    else:
+        return mx4.flatten().getA()[0]
 
 def setPos(mx4, v3):
     """

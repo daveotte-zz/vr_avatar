@@ -412,7 +412,7 @@ class nnData(object):
     def drawPredictedAtFrame(self,scene,frame):
         print "draw predicted at frame: %d"%(frame)
         inputArray, outputArray = self.operation.operate(self.extractedTransformsAtFrame(scene,frame))
-        print "the input array is: " + str(inputArray)
+        #print "the input array is: " + str(inputArray)
         predictedOutputArray = self.model.predict_on_batch(np.array([inputArray]))
 
         #give the prediction back to the operation object in case it's needed for the next prediction

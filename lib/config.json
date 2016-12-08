@@ -303,10 +303,10 @@
                         ],
                 "method": "predictElbowsVel",
                 "logDir":"/home/daveotte/work/trials",
-                "epochs": 1
+                "epochs": 100
             }      
        ],
-    "trainingGroupIndices": [2, 3],
+    "trainingGroupIndices": [0],
     "testingGroupIndices": [10,23,24,12,13,39,38],
     "nnConfigs": ["predictEverything","predictElbowsVel"]
 }
