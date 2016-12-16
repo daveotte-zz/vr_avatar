@@ -43,6 +43,12 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.showSkeleton = self.skeletonCheckbox.isChecked()
         self.skeletonCheckbox.stateChanged.connect(self.setShowSkeleton)
 
+        self.graphicViewObj.showTransforms = self.transformsCheckbox.isChecked()
+        self.transformsCheckbox.stateChanged.connect(self.setShowTransforms)
+
+        self.graphicViewObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
+        self.skeletonRecomposedCheckbox.stateChanged.connect(self.setShowSkeletonRecomposed)
+
         self.graphicViewObj.showExtractedTransforms = self.extractedCheckbox.isChecked()
         self.extractedCheckbox.stateChanged.connect(self.setShowExtractedTransforms)
 
@@ -217,7 +223,7 @@ class UI(QtGui.QMainWindow):
             self.sceneBaseName2Object[item.basename] = item
         
         for item in self.App.fbxTestingScenes:
-            itemGuiName = item.basename+"testing"
+            itemGuiName = item.basename+" verify."
             self.sceneList.addItem(itemGuiName)
             #a dict we can use to get the object given the basename
             self.sceneBaseName2Object[itemGuiName] = item
@@ -251,6 +257,14 @@ class UI(QtGui.QMainWindow):
         self.graphicViewObj.showSkeleton = self.skeletonCheckbox.isChecked()
         self.graphicViewObj.updateGL()
 
+    def setShowSkeletonRecomposed(self):
+        self.graphicViewObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
+        self.graphicViewObj.updateGL()
+
+
+    def setShowTransforms(self):
+        self.graphicViewObj.showTransforms = self.transformsCheckbox.isChecked()
+        self.graphicViewObj.updateGL()
 
     def setShowGrid(self):
         self.graphicViewObj.showGrid = self.gridCheckbox.isChecked()
@@ -345,6 +359,22 @@ class Viewer3DWidget(QGLWidget):
                 self.drawSkeleton()
             else:
                 self.scene.drawAtFrame(self.frame, self.transformScale)
+
+        if self.showSkeletonRecomposed:
+            if self.scene.basename.endswith('.fbx'):
+                self.drawSkeletonNoElbow()
+                #attempt to draw the predicted arm.
+                #rShldrPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rShldr', self.frame))
+                #pointA = [self.nnData.drawRecomposePos[0],self.nnData.drawRecomposePos[1],self.nnData.drawRecomposePos[2]]
+                #pointB = [rShldrPos[0],rShldrPos[1],rShldrPos[2]]
+
+                #mxUtil.drawLine(pointA,pointB)
+                #rHandPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rHand', self.frame))
+                #pointB = [rHandPos[0],rHandPos[1],rHandPos[2]]
+                #mxUtil.drawLine(pointA,pointB)   
+
+            else:
+                self.scene.drawAtFrame(self.frame, self.transformScale)
         
         if self.showExtractedTransforms:
             self.nnData.drawExtractedTransformsAtFrame(self.scene, self.frame, self.transformScale)
@@ -356,8 +386,10 @@ class Viewer3DWidget(QGLWidget):
             self.nnData.drawPredictedAtFrame(self.scene, self.frame)
 
         if self.showRecompose:
+            self.nnData.operation.rShldrPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rShldr', self.frame)).tolist()
+            self.nnData.operation.rHandPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rHand', self.frame)).tolist()
             self.nnData.drawRecomposeAtFrame(self.scene, self.frame)
-        
+     
         glFlush()
 
     def resizeGL(self, widthInPixels, heightInPixels):
@@ -406,7 +438,21 @@ class Viewer3DWidget(QGLWidget):
         glBegin(GL_LINE_STRIP)
         self.drawSkeltonLines(self.scene.jointRoot,0)
         glEnd()
-        self.drawSkeletonTransforms()
+        if self.showTransforms:
+            self.drawSkeletonTransforms()
+
+
+    def drawSkeletonNoElbow(self):
+        """
+        Draw skeleton with lines from parent to child.
+        Then draw xform of each node in skeleton.
+        """
+        glColor3f(1.0,1.0,1.0);
+        glLineWidth(1)
+        glBegin(GL_LINE_STRIP)
+        self.drawSkeltonLinesNoElbow(self.scene.jointRoot,0)
+        glEnd()
+        #self.drawSkeletonTransforms()
 
     def drawSkeltonLines(self, pNode, pDepth):
         """
@@ -426,6 +472,34 @@ class Viewer3DWidget(QGLWidget):
             glVertex3fv(mx[3,0:3])  
             if pNode.GetChild(i).GetChildCount():
                 self.drawSkeltonLines(pNode.GetChild(i), pDepth + 1)
+            else:
+                glEnd()
+                glBegin(GL_LINE_STRIP)
+
+    def drawSkeltonLinesNoElbow(self, pNode, pDepth):
+        """
+        Walk hierarchy to draw lines from parent to children
+        by walking hierarchy.
+        """
+        lString = ""
+        for i in range(pDepth):
+            lString += "     "
+        lString += pNode.GetName()
+        #print(lString)
+             
+        for i in range(pNode.GetChildCount()):
+            print str(pNode.GetChild(i).GetName())
+            if str(pNode.GetChild(i).GetName()).__contains__("rForeArm") or str(pNode.GetChild(i).GetName()).__contains__("rHand"):
+                glEnd()
+                glBegin(GL_LINE_STRIP)
+            else:
+                mx = self.scene.getNpGlobalTransform(pNode.GetName(), self.frame )
+                glVertex3fv(mx[3,0:3]) 
+                mx = self.scene.getNpGlobalTransform(pNode.GetChild(i).GetName(), self.frame )
+                glVertex3fv(mx[3,0:3])  
+
+            if pNode.GetChild(i).GetChildCount():
+                self.drawSkeltonLinesNoElbow(pNode.GetChild(i), pDepth + 1)
             else:
                 glEnd()
                 glBegin(GL_LINE_STRIP)

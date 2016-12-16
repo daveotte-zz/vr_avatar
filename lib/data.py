@@ -101,12 +101,6 @@ class fbxManager(dataManager):
     def destroy(self):
         for obj in self.dataObjects:
             obj.destroy()
-#appears not to be used
-#    def getFbxFiles(self):
-#        fList = []
-#        for f in self.dataObjects:
-#            fList = flist + f.getFbxFiles()
-#        return fList
 
     @property 
     def fbxScenes(self):
@@ -427,6 +421,7 @@ class nnData(object):
         predictedOutputArray = self.model.predict_on_batch(np.array([inputArray]))
         self.operation.recompose(predictedOutputArray[0])
         self.operation.drawRecompose()
+        #self.drawRecomposePos = self.operation.drawRecomposePos
 
     def drawManipulatedTransformsAtFrame(self,scene,frame,transformScale):
         print "draw manipulated at frame: %d"%(frame)
@@ -540,4 +535,4 @@ class nnConfigData(baseData):
                 #is nnConfig.name3 there? no, then name2 is read dir, and make name3 as write dir
 
 def camel2Title(camel):
-    return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', camel).title()
+    return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', camel).title().replace('Predict ', '')

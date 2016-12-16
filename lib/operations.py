@@ -140,6 +140,8 @@ class predictEverything(object):
 class predictElbow(object):
     def __init__(self):
         self.transformScale = 1.0
+        self.rShldrPos = [0.0,0.0,0.0]
+        self.rHandPos = [0.0,0.0,0.0]
     
     def operate(self,transformList):
         """
@@ -152,6 +154,8 @@ class predictElbow(object):
         rHandMx4 = transformList[1]
         lHandMx4 = transformList[2]
         rForeArmMx4 = transformList[3]
+
+        self.correct = mxUtil.getPosArray(rForeArmMx4)
 
         #get head position v3
         headPosV3 = mxUtil.getPosArray(headMx4)
@@ -202,13 +206,31 @@ class predictElbow(object):
 
     def drawPredict(self):
         magenta = [1.0,0.0,1.0]
-        size = 12
+        size = 9
         mxUtil.drawPos(self.drawRecomposePos,size,magenta)
 
     def drawRecompose(self):
         magenta = [1.0,0.0,1.0]
-        size = 12
+        size = 9
         mxUtil.drawPos(self.drawRecomposePos,size,magenta)
+        mxUtil.drawLine(self.drawRecomposePos,self.correct,1,[1.0,0.0,0.0])
+        pointA = np.array([self.drawRecomposePos[0],self.drawRecomposePos[1],self.drawRecomposePos[2]])
+        pointB = np.array([self.correct[0],self.correct[1],self.correct[2]])
+
+        errorV3 = pointB-pointA
+        errorLength = np.linalg.norm(errorV3)
+        
+        #print "Writing: %s"%(str(errorLength))
+        #logFile = open('/home/daveotte/predictElbowError.txt','a')
+        #logFile.write(str(round(errorLength,3))+'\n')
+        #logFile.close()
+
+
+        mxUtil.drawLine(self.rShldrPos,self.drawRecomposePos)
+        mxUtil.drawLine(self.rHandPos,self.drawRecomposePos)
+        #rHandPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rHand', self.frame))
+        #pointB = [rHandPos[0],rHandPos[1],rHandPos[2]]
+        #mxUtil.drawLine(pointA,pointB)      
 
 
     def draw(self):
@@ -275,12 +297,12 @@ class predictShldr(object):
 
     def drawPredict(self):
         magenta = [1.0,0.0,1.0]
-        size = 12
+        size = 9
         mxUtil.drawPos(self.drawRecomposePos,size,magenta)
 
     def drawRecompose(self):
         magenta = [1.0,0.0,1.0]
-        size = 12
+        size = 9
         mxUtil.drawPos(self.drawRecomposePos,size,magenta)
 
 
@@ -382,13 +404,13 @@ class predictHip(object):
 
     def drawPredict(self):
         magenta = [1.0,0.0,1.0]
-        size = 12
+        size = 9
         mxUtil.drawMx(self.drawRecomposeMx,self.transformScale)
         mxUtil.drawPos(self.drawRecomposePos,size,magenta)
 
     def drawRecompose(self):
         magenta = [1.0,0.0,1.0]
-        size = 12
+        size = 9
         mxUtil.drawMx(self.drawRecomposeMx)
         mxUtil.drawPos(self.drawRecomposePos,size,magenta)
 
@@ -401,6 +423,163 @@ class predictHip(object):
 
 
 class predictElbowsVel(object):
+    def __init__(self):
+        self.transformScale = 1.0
+        self.prevTransformList = []
+        self.predictionOutputArray = []
+        
+    
+    def operate(self,transformList):
+        """
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rForeArm", "world"]   
+        """
+        #store transformlist for the next frame.
+        self.prevTransformList.append(copy.copy(transformList))
+        if len(self.prevTransformList)>2:
+            del self.prevTransformList[0]
+
+
+        headMx4 = transformList[0]
+        rHandMx4 = transformList[1]
+        lHandMx4 = transformList[2]
+        rForeArmMx4 = transformList[3]
+
+        headMx4_1 = self.prevTransformList[0][0]
+        rHandMx4_1 = self.prevTransformList[0][1]
+        lHandMx4_1 = self.prevTransformList[0][2]
+        rForeArmMx4_1 = self.prevTransformList[0][3]     
+
+        #get head position v3
+        headPosV3 = mxUtil.getPosArray(headMx4)
+
+        headPos_1 = mxUtil.getPosArray(headMx4_1) - headPosV3
+        rHandPos_1 = mxUtil.getPosArray(rHandMx4_1) - headPosV3
+        lHandPos_1 = mxUtil.getPosArray(lHandMx4_1) - headPosV3
+
+
+
+        #rForeArmPos_1 = mxUtil.getPosArray(rForeArmMx4_1) - headPosV3
+
+        #send head to origin
+        headMx4Origin = copy.copy(headMx4)
+        headMx4Origin = mxUtil.extractRot(headMx4Origin)
+
+        #send rHand to the origin with head offset
+        rHandPosV3 = mxUtil.getPosArray(rHandMx4)
+        rHandPosV3 = rHandPosV3 - headPosV3
+
+        rHandMx4Origin = copy.copy(rHandMx4)
+        rHandMx4Origin = mxUtil.setPos(rHandMx4Origin, rHandPosV3)
+        
+        #send lHand to the origin with head offset
+        lHandPosV3 = mxUtil.getPosArray(lHandMx4)
+        lHandPosV3 = lHandPosV3 - headPosV3
+        lHandMx4Origin = copy.copy(lHandMx4)
+        lHandMx4Origin = mxUtil.setPos(lHandMx4Origin, lHandPosV3)
+
+        #send rForeArm to the origin with head offset (we just work with pos)
+        rForeArmPosV3 = mxUtil.getPosArray(copy.copy(rForeArmMx4))
+        rForeArmPosV3 = rForeArmPosV3 - headPosV3
+
+        outputArray = rForeArmPosV3.tolist()
+        #print "the output array%s"%(str(outputArray))
+
+        #outputArray = np.array(posList).flatten()
+
+        inputArray = mxUtil.getTransformArray(rHandMx4Origin,True).tolist() + mxUtil.getRotArray(headMx4Origin).tolist() + mxUtil.getTransformArray(lHandMx4Origin,True).tolist()
+        #inputArray = inputArray + headPos_1.tolist() + rHandPos_1.tolist() + lHandPos_1.tolist() + rForeArmPos_1.tolist()
+        inputArray = inputArray + headPos_1.tolist() + rHandPos_1.tolist() + lHandPos_1.tolist() 
+
+        self.drawMxs = [rHandMx4Origin,headMx4Origin,lHandMx4Origin]
+
+        posList = []
+        posList.append(rHandPos_1)
+        posList.append(headPos_1)
+        posList.append(lHandPos_1)
+        posList.append(rForeArmPosV3)
+        #posList.append(rForeArmPos_1)
+
+        self.drawPositions = posList
+
+        # stuff for recompose
+        self.headPosV3 = headPosV3
+
+        self.correct = mxUtil.getPosArray(copy.copy(rForeArmMx4))
+
+        #return as python lists
+        return inputArray, outputArray
+
+    def recompose(self,predictedOutputArray):
+        """
+        Put the outputArray back into the space of the extracted
+        transforms. Allows seeing the predictions in place.
+        """
+        #put rForeArm as offset from extracted head,
+        #instead of as offset from head at origin
+        self.drawRecomposePositions = []
+        pos = []
+        for i in range(0,len(predictedOutputArray)/3):
+            for p in range(i,i+3):
+                pos.append(predictedOutputArray[p])
+            i=i+3
+            self.drawRecomposePositions.append(self.headPosV3 + pos)
+            pos = []
+
+    def predict(self,predictedOutputArray):
+        self.drawRecomposePositions = []
+        pos = []
+        for i in range(0,len(predictedOutputArray)/3):
+            for p in range(i,i+3):
+                pos.append(predictedOutputArray[p])
+            i=i+3
+            self.drawRecomposePositions.append(pos)
+            pos = []
+
+
+    def drawPredict(self):
+        magenta = [1.0,0.0,1.0]
+        size = 9
+        for pos in self.drawRecomposePositions:
+            mxUtil.drawPos(pos,size,magenta)
+
+    def drawRecompose(self):
+        magenta = [1.0,0.0,1.0]
+        size = 9
+        for pos in self.drawRecomposePositions:
+            mxUtil.drawPos(pos,size,magenta)
+            #print "predicted %s and correct %s"%(str(pos),str(self.correct))
+            mxUtil.drawLine(pos,self.correct,1,[1.0,0.0,0.0])
+        pointA = np.array([pos[0],pos[1],pos[2]])
+        pointB = np.array([self.correct[0],self.correct[1],self.correct[2]])
+
+        errorV3 = pointB-pointA
+        errorLength = np.linalg.norm(errorV3)
+        
+        #print "Writing: %s"%(str(errorLength))
+        #logFile = open('/home/daveotte/predictElbowVelError.txt','a')
+        #logFile.write(str(round(errorLength,3))+'\n')
+        #logFile.close()
+
+    def draw(self):
+        for mx in self.drawMxs:
+            mxUtil.drawMx(mx,self.transformScale)
+        for pos in self.drawPositions:
+            mxUtil.drawPos(pos)
+        #draw line from cur frame to prev frame foreach joint
+        for i in range(0,len(self.drawMxs)):
+            pointA = mxUtil.getPosArray(self.drawMxs[i])
+            pointB = self.drawPositions[i]
+            mxUtil.drawLine(pointA, pointB)
+
+        #mxUtil.drawLine(self.drawPositions[3],self.drawPositions[4])
+
+
+
+
+class predictElbowsVel2(object):
     def __init__(self):
         self.transformScale = 1.0
         self.prevTransformList = []
@@ -476,6 +655,7 @@ class predictElbowsVel(object):
 
         inputArray = mxUtil.getTransformArray(rHandMx4Origin,True).tolist() + mxUtil.getRotArray(headMx4Origin).tolist() + mxUtil.getTransformArray(lHandMx4Origin,True).tolist()
         inputArray = inputArray + headPos_1.tolist() + rHandPos_1.tolist() + lHandPos_1.tolist() + rForeArmPos_1.tolist()
+        #inputArray = inputArray + headPos_1.tolist() + rHandPos_1.tolist() + lHandPos_1.tolist() 
 
         self.drawMxs = [rHandMx4Origin,headMx4Origin,lHandMx4Origin]
 
@@ -490,6 +670,8 @@ class predictElbowsVel(object):
 
         # stuff for recompose
         self.headPosV3 = headPosV3
+
+        self.correct = mxUtil.getPosArray(copy.copy(rForeArmMx4))
 
         #return as python lists
         return inputArray, outputArray
@@ -520,8 +702,6 @@ class predictElbowsVel(object):
             self.drawRecomposePositions.append(pos)
             pos = []
 
-    def runPrediction(self,inputArray):
-        self.model.predict_on_batch(np.array([inputArray]))
 
     def drawPredict(self):
         magenta = [1.0,0.0,1.0]
@@ -534,6 +714,18 @@ class predictElbowsVel(object):
         size = 9
         for pos in self.drawRecomposePositions:
             mxUtil.drawPos(pos,size,magenta)
+            #print "predicted %s and correct %s"%(str(pos),str(self.correct))
+            mxUtil.drawLine(pos,self.correct,1,[1.0,0.0,0.0])
+        pointA = np.array([pos[0],pos[1],pos[2]])
+        pointB = np.array([self.correct[0],self.correct[1],self.correct[2]])
+
+        errorV3 = pointB-pointA
+        errorLength = np.linalg.norm(errorV3)
+        
+        print "Writing: %s"%(str(errorLength))
+        logFile = open('/home/daveotte/predictElbowVel2Error.txt','a')
+        logFile.write(str(round(errorLength,3))+'\n')
+        logFile.close()
 
     def draw(self):
         for mx in self.drawMxs:
