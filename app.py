@@ -28,7 +28,7 @@ class App(object):
         self.fbxTestingScenes   = fbxManager(jsonNodes['testingGroupIndices']).fbxScenes
 
         #initializing takes a long time if done one at a time, so:
-        '''ls
+        '''
         for fbxScene in self.fbxTrainingScenes:
             fbxScene.thread = Thread(target=self.initializeFbxScene, args=(fbxScene,))
             fbxScene.thread.start()

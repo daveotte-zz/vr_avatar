@@ -10,7 +10,8 @@ import matrixUtil as mxUtil
 import operations as op
 from path import Path
 from threading import Thread
-
+import ast
+from collections import OrderedDict
 sys.path.append('/usr/local/lib/python2.7/site-packages/ImportScene')
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
@@ -34,6 +35,9 @@ from FbxCommon import *
 import numpy as np
 from keras.models import Sequential
 from keras.models import model_from_json
+
+
+from pprint import pprint
 
 def getJsonFile():
     '''
@@ -139,7 +143,8 @@ class fbxGroup(baseData):
         files = []
         if hasattr(self, 'dir'):
             for f in os.listdir(self.dir):
-                if f.endswith('.fbx'):
+                #could be an fbx scene, or my made up format 9vive telemetry).
+                if f.endswith('.fbx') or f.endswith('.csv'):
                     files.append(self.dir+'/'+f)
         return files
 
@@ -152,15 +157,263 @@ class fbxGroup(baseData):
     def fbxScenesInGroup(self):
         fbxScenesInGroup = []
         for f in self.fbxFilesInGroup():
-            fbxScenesInGroup.append(fbxScene(f))
+            print f
+            sceneClass = self.sceneClass(f)
+            print sceneClass
+            fbxScenesInGroup.append(sceneClass(f))
         return fbxScenesInGroup
 
+    def sceneClass(self,file):
+        '''
+        From the file extension, determine scene class to create.
+        '''
+        if file.endswith(".fbx"):
+            sceneClass = eval("fbxScene")
+        elif file.endswith(".csv"):
+            print "Found csv ====================================================="
+            sceneClass = eval("viveScene")
+
+        return sceneClass
+             
+
+class nodes(object):
+    def __init__(self,jointRoot,jointsDict,jointOrder,npList):
+        self.joints = []
+        self.jointsDict = jointsDict
+        self.makeJoint(jointRoot)
+        self.npList = npList
+        self.startIndex = 0
+        self.endIndex = 16
+        self.addTransforms(jointOrder)
+        print "this is the count: " + str(len(self.joints))
+
+    def makeJoint(self, jointName):
+        nodeObj = node(jointName)
+        self.joints.append(nodeObj)   
+        for childName in self.jointsDict[jointName]:
+            if childName:
+                nodeObj.AddChild(self.makeJoint(childName))
+
+        print "Returning " + str(self.joints)
+        return nodeObj   
+
+    def addTransforms(self,jointOrder):
+        for jointName in jointOrder:
+            nodeObj = self.getJoint(jointName)  
+            nodeObj.npMx = np.matrix(self.npList[0:,self.startIndex:self.endIndex])
+            self.startIndex = self.startIndex+16
+            self.endIndex = self.endIndex+16
+        self.startIndex = 0
+        self.endIndex = 16
+
+    def getJoint(self,jointName):
+        for j in self.joints:
+            if j.name == jointName:
+                return j       
 
 
-class joint(object):
-    def __init__(self,name='RootNode'):
-        self.name = name
-        self.children = [False]
+    def printJoints(self):
+        print str(len(self.joints))
+        for j in self.joints:
+            print j
+
+
+
+class node(object):
+    def __init__(self,jointName):
+        self.name = jointName
+        self.children = []
+        self.npMx = np.identity(4)
+    
+    def GetName(self):
+        return self.name
+
+    def GetChildCount(self):
+        return len(self.children)
+
+    def GetChild(self,index):
+        return self.children[index]
+
+    def AddChild(self, childNode):
+        self.children.append(childNode)
+
+    def GetNodeGlobalTransform(self,time):
+        return self.npMx[time].reshape(4,4)
+
+
+class scene(object):
+    """scene base class"""
+    def __init__(self,fileName):
+        self.fileName = fileName 
+        self.needsInitializing = True 
+        self.basename = Path(self.fileName).basename()
+
+    def makeSkeletonNodeNameList(self):
+        """
+        Create list of joints in skeleton. Walk hierarchy
+        from specified root node to make the list.
+        """       
+        self.skeletonNodeNameList = []
+        self.walkHierarchy(self.jointRoot)
+
+    def walkHierarchy(self, node):
+        """
+        Walk hierarchy to draw lines from parent to children.
+        """
+        self.skeletonNodeNameList.append(node.GetName())
+        for i in range(node.GetChildCount()):
+                self.walkHierarchy(node.GetChild(i))
+
+        
+
+
+class viveScene(scene):
+    """
+    Library to work with recordered vive telemetry scene (a .csv file).
+    """
+    def __init__(self, fileName):
+        super(viveScene, self).__init__(fileName)
+
+
+    def initialize(self):
+        if self.needsInitializing:
+            print "Initializing: %s"%(self.fileName)
+            #load scene into lScene?
+            self.needsInitializing          = False
+            self.fileLines = [line.rstrip('\r\n') for line in open(self.fileName)]
+            npList = np.loadtxt(self.fileName,skiprows=1,delimiter=',')
+            #first line of file has a dict representation of scene info. Handy, right?
+            self.configDict = ast.literal_eval(self.fileLines.pop(0))
+            self.jointsObj  = nodes(self.configDict['jointRoot'], \
+                                            self.configDict['joints'],\
+                                            self.configDict['order'], npList)
+            self.start                      = self.configDict['start']
+            self.end                        = self.configDict['end']
+            self.jointNameAndIndexDict      = self.getJointNameAndIndexDict()
+            self.jointRoot                  = self.jointsObj.getJoint(self.configDict["jointRoot"])
+            self.makeSkeletonNodeNameList()
+ 
+
+    @property
+    def startTime(self):
+        self.initialize()
+        return self.start
+
+    @property
+    def endTime(self):
+        self.initialize()
+        return self.end
+
+    def getJoint(self,jointName):
+        for j in self.joints:
+            if j.name == jointName:
+                return j
+
+    def getJointNameAndIndexDict(self):
+        """
+        Create dictionary lookup table with joint name 
+        as keys, and index number by value
+        """
+        self.initialize()
+        indexDict = {}
+
+        for joint in self.jointsObj.joints:
+            indexDict[joint.name]=self.jointsObj.joints.index(joint)
+        return indexDict
+
+    def getFbxNodeNpTransformAtFrame(self, jointName, frame, transformSpace="world"):
+        """
+        Return numpy mx4 for a node within the fbx scene at a specificed time.
+        """
+        if transformSpace=="world":
+            return self.getGlobalTransform(jointName, frame)
+        elif transformSpace=="local":
+            print "This doesn't work with local yet."
+        else:
+            print "Need to specify 'world' or 'local'."
+
+    def getNodeIndexByName(self,jointName):
+        self.initialize()
+        return self.jointNameAndIndexDict[jointName]
+
+
+    def getNpGlobalTransform(self, jointName, time=0):
+        return self.getGlobalTransform(jointName,time)
+
+    #def getNpLocalTransform(self, jointName, time=0):
+    #    return mxUtil.fbxMxtoNumpyMx(self.getLocalTransform(jointName,time))
+
+    def getGlobalTransform(self, jointName, time=0):
+        """
+        Return transform of specificied joint node,
+        at the specified time.
+        """
+        print "Getting %s"%jointName
+        self.initialize()
+        node = self.jointsObj.getJoint(jointName)
+        if node:
+            return node.GetNodeGlobalTransform(time)
+        else:
+            return mxUtil.identity()
+
+ 
+    #def getLocalTransform(self, jointName, time=0):
+    #    self.initialize()
+    #    self.time.SetFrame(time)
+    #    return self.animEval.GetNodeLocalTransform(self.getNode(jointName),self.time)
+
+    def getGlobalPos(self,jointName,time=0):
+        """
+        Return a list of 3 numbers to represent local position component
+        of given matrix.
+        """
+        return self.v4Tov3(self.getGlobalTransform(jointName,time).GetRow(3))
+
+    def getLocalPos(self,jointName,time=0):
+        """
+        Return a list of 3 numbers to represent global position component
+        of given matrix.
+        """
+        return self.v4Tov3(self.getLocalTransform(jointName,time).GetRow(3))
+ 
+    def getGlobalRot(self,jointName,time=0):
+        """
+        Return a list of 9 numbers to represent global Mx3 rotation extracted
+        from joint's global Mx4 transform.
+        """
+        return self.extractRotAsList(self.getGlobalTransform(jointName,time))
+ 
+    def getLocalRot(self,jointName,time=0):
+        """
+        Return a list of 9 numbers to represent global Mx3 rotation extracted
+        from joint's global Mx4 transform.
+        """
+        return self.extractRotAsList(self.getLocalTransform(jointName,time))
+
+    def extractRotAsList(self, mx4):
+        """
+        Extract rot/scale from mx4 as list of 9 numbers.
+        """
+        return  self.v4Tov3(mx4.GetRow(0)) + \
+                self.v4Tov3(mx4.GetRow(1)) + \
+                self.v4Tov3(mx4.GetRow(2))
+
+    def v4Tov3 (self,v4):
+        v3=[]
+        v3.append(v4[0])
+        v3.append(v4[1])
+        v3.append(v4[2]) 
+        return v3      
+
+    def destroy(self):
+        if not self.needsInitializing:
+            print 'Destroy: ' + self.basename
+            #self.lSdkManager.Destroy()
+        self.needsInitializing = True
+
+
+
+
 
 
 class fbxScene(object):
@@ -445,13 +698,16 @@ class nnData(object):
         for l in self.data:
             print l
 
+
+
+"""
 class transformsFilesManager(dataManager):
     def __init__(self, dataType):
-        dataManager.__init__(self, dataType) 
+        super(transformsFilesManager, self).__init__(dataType)
  
 class transformsFiles(baseData):
     def __init__(self, jsonNode):
-        baseData.__init__(self, jsonNode) 
+        super(transformsFiles, self).__init__(jsonNode)
         self.transforms = [line.rstrip('\n') for line in open(self.fileName)]
         self.basename = Path(self.fileName).basename()
         self.start = 0
@@ -460,7 +716,7 @@ class transformsFiles(baseData):
     def drawAtFrame(self,frame,transformScale):
         mxUtil.drawMx(mxUtil.listToNumpyMx(self.transforms[frame]),transformScale)
 
-
+"""
 
 
 

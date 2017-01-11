@@ -210,16 +210,14 @@
                 "name": "test2",
                 "index":100,
                 "dir": "/home/daveotte/work/mocap_animations_with_binary/test"
-            }
-        ],
-    "transformsFiles":
-        [
-
+            },                  
             {
-                "name": "viveCapture",
-                "fileName": "/home/daveotte/work/vr_avatar/HMDtransforms.txt"
+                "name": "vive_telemetry",
+                "index":200,
+                "dir": "/home/daveotte/work/vive_telemetry"
             }
         ],
+
     "nnConfigData":
         [
             {
@@ -266,6 +264,19 @@
                 "epochs": 80
             },
             {
+                "name": "predictElbowVive",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rForeArm", "world"] 
+
+                        ],
+                "method": "predictElbowVive",
+                "logDir":"/home/daveotte/work/trials",
+                "epochs": 80
+            },            {
                 "name": "predictElbowTest",
                 "transforms":
                         [   
@@ -338,7 +349,7 @@
                 "epochs": 200
             }      
        ],
-    "trainingGroupIndices": [2, 3],
-    "testingGroupIndices": [100],
-    "nnConfigs": ["predictShldr","predictElbow","predictElbowTest","predictElbowsVel","predictElbowsVel2"]
+    "trainingGroupIndices": [2],
+    "testingGroupIndices": [200],
+    "nnConfigs": ["predictShldr","predictElbow","predictElbowVive","predictElbowTest","predictElbowsVel","predictElbowsVel2"]
 }

@@ -150,3 +150,8 @@ def drawLine(pointA, pointB, size=1,color=[1.0,1.0,1.0]):
     glVertex3fv([pointA[0],pointA[1],pointA[2]])
     glVertex3fv([pointB[0],pointB[1],pointB[2]])
     glEnd()
+
+def identity():
+    return np.matrix(np.identity(4))
+
+

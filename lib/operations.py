@@ -4,6 +4,8 @@ from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 import copy
+from rig.joints import *
+
 
 class predictEverything(object):
     def __init__(self):
@@ -238,7 +240,118 @@ class predictElbow(object):
             mxUtil.drawMx(mx,self.transformScale)
         mxUtil.drawPos(self.drawPos)
 
+class predictElbowVive(object):
+    def __init__(self):
+        self.transformScale = 1.0
+        self.rShldrPos = [0.0,0.0,0.0]
+        self.rHandPos = [0.0,0.0,0.0]
+    
+    def operate(self,transformList):
+        """
+                                ["head", "world"],
+                                ["rHand", "world"],    
+                                ["lHand", "world"],    
+                                ["rForeArm", "world"],    
+        """
+        hmdMx4 = transformList[0]
+        rControllerMx4 = transformList[1]
+        lControllerMx4 = transformList[2]
 
+        self.joints = joints('/home/daveotte/work/vr_avatar/rig/avatar.xml')
+
+        #apply rHand local offset
+        hmdJoint = self.joints.getJoint('hmd')
+        hmdJoint.npMx = hmdMx4
+        headMx4 = self.joints.getJoint('head').GetNodeGlobalTransform()
+
+        #get head position v3
+        self.headPosV3 = mxUtil.getPosArray(headMx4)
+        #send head to origin
+        headMx4 = mxUtil.extractRot(headMx4)
+
+        #RIGHT
+        #apply rHand local offset
+        rControllerJoint = self.joints.getJoint('rController')
+        rControllerJoint.npMx = rControllerMx4
+        rHandMx4 = self.joints.getJoint('rHand').GetNodeGlobalTransform()
+
+        #send rHand to the origin with head offset
+        rHandPosV3 = mxUtil.getPosArray(rHandMx4)
+        rHandPosV3 = rHandPosV3 - self.headPosV3
+        rHandPosV3 = rHandPosV3* .85
+        rHandMx4 = mxUtil.setPos(rHandMx4, rHandPosV3)
+        
+        #LEFT
+        #apply lHand local offset
+        lControllerJoint = self.joints.getJoint('lController')
+        lControllerJoint.npMx = lControllerMx4
+        lHandMx4 = self.joints.getJoint('lHand').GetNodeGlobalTransform()
+
+        #send lHand to the origin with head offset
+        lHandPosV3 = mxUtil.getPosArray(lHandMx4)
+        lHandPosV3 = lHandPosV3 - self.headPosV3
+        lHandPosV3 = lHandPosV3 * .85
+        lHandMx4 = mxUtil.setPos(lHandMx4, lHandPosV3)
+
+
+
+        inputArray = mxUtil.getTransformArray(rHandMx4).tolist() + mxUtil.getRotArray(headMx4).tolist() + mxUtil.getTransformArray(lHandMx4).tolist()
+ 
+        outputArray = [0.0,0.0,0.0]
+        self.drawMxs = [rHandMx4,headMx4,lHandMx4]
+        self.drawPos = outputArray
+
+
+        #self.rForeArmPosV3 = rForeArmPosV3
+
+        #return as python lists...apparently.
+        return inputArray, outputArray
+
+    def recompose(self,predictedOutputArray):
+        """
+        Put the outputArray back into the space of the extracted
+        transforms. Allows seeing the predictions in place.
+        """
+        #put rForeArm as offset from extracted head,
+        #instead of as offset from head at origin
+        self.drawRecomposePos = self.headPosV3 + predictedOutputArray
+
+    def predict(self,predictedOutputArray):
+        self.drawRecomposePos = predictedOutputArray
+
+    def drawPredict(self):
+        magenta = [1.0,0.0,1.0]
+        size = 9
+        mxUtil.drawPos(self.drawRecomposePos,size,magenta)
+
+    def drawRecompose(self):
+        magenta = [1.0,0.0,1.0]
+        size = 9
+        mxUtil.drawPos(self.drawRecomposePos,size,magenta)
+        #mxUtil.drawLine(self.drawRecomposePos,self.correct,1,[1.0,0.0,0.0])
+        #pointA = np.array([self.drawRecomposePos[0],self.drawRecomposePos[1],self.drawRecomposePos[2]])
+        #pointB = np.array([self.correct[0],self.correct[1],self.correct[2]])
+
+        #errorV3 = pointB-pointA
+        #errorLength = np.linalg.norm(errorV3)
+        
+        #print "Writing: %s"%(str(errorLength))
+        #logFile = open('/home/daveotte/predictElbowError.txt','a')
+        #logFile.write(str(round(errorLength,3))+'\n')
+        #logFile.close()
+
+
+        #mxUtil.drawLine(self.rShldrPos,self.drawRecomposePos)
+        #mxUtil.drawLine(self.rHandPos,self.drawRecomposePos)
+        #rHandPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rHand', self.frame))
+        #pointB = [rHandPos[0],rHandPos[1],rHandPos[2]]
+        #mxUtil.drawLine(pointA,pointB)      
+
+
+    def draw(self):
+        for mx in self.drawMxs:
+            mxUtil.drawMx(mx,self.transformScale)
+        mxUtil.drawPos(self.drawPos)
 
 class predictShldr(object):
     def __init__(self):

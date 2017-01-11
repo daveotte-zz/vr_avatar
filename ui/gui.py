@@ -354,11 +354,10 @@ class Viewer3DWidget(QGLWidget):
         
         if self.showGrid:
             self.drawGrid()
+
         if self.showSkeleton:
-            if self.scene.basename.endswith('.fbx'):
-                self.drawSkeleton()
-            else:
-                self.scene.drawAtFrame(self.frame, self.transformScale)
+            self.drawSkeleton()
+
 
         if self.showSkeletonRecomposed:
             if self.scene.basename.endswith('.fbx'):
@@ -467,6 +466,7 @@ class Viewer3DWidget(QGLWidget):
              
         for i in range(pNode.GetChildCount()):
             mx = self.scene.getNpGlobalTransform(pNode.GetName(), self.frame )
+
             glVertex3fv(mx[3,0:3]) 
             mx = self.scene.getNpGlobalTransform(pNode.GetChild(i).GetName(), self.frame )
             glVertex3fv(mx[3,0:3])  
