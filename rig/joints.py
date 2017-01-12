@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 import ast
 import numpy as np
-import lib.matrixUtil as mxUtil
+import lib.util as mxUtil
 
 class joints(object):
     def __init__(self,jointsXml):
@@ -68,3 +68,64 @@ class joint(object):
 
     def GetNodeLocalTransform(self,time=0):
     	return self.npMx
+
+class nodes(object):
+    def __init__(self,jointRoot,jointsDict,jointOrder,npList):
+        self.joints = []
+        self.jointsDict = jointsDict
+        self.makeJoint(jointRoot)
+        self.npList = npList
+        self.startIndex = 0
+        self.endIndex = 16
+        self.addTransforms(jointOrder)
+        print "this is the count: " + str(len(self.joints))
+
+    def makeJoint(self, jointName):
+        nodeObj = node(jointName)
+        self.joints.append(nodeObj)   
+        for childName in self.jointsDict[jointName]:
+            if childName:
+                nodeObj.AddChild(self.makeJoint(childName))
+        return nodeObj   
+
+    def addTransforms(self,jointOrder):
+        for jointName in jointOrder:
+            nodeObj = self.getJoint(jointName)  
+            nodeObj.npMx = np.matrix(self.npList[0:,self.startIndex:self.endIndex])
+            self.startIndex = self.startIndex+16
+            self.endIndex = self.endIndex+16
+        self.startIndex = 0
+        self.endIndex = 16
+
+    def getJoint(self,jointName):
+        for j in self.joints:
+            if j.name == jointName:
+                return j       
+
+
+    def printJoints(self):
+        print str(len(self.joints))
+        for j in self.joints:
+            print j
+
+
+class node(object):
+    def __init__(self,jointName):
+        self.name = jointName
+        self.children = []
+        self.npMx = np.identity(4)
+    
+    def GetName(self):
+        return self.name
+
+    def GetChildCount(self):
+        return len(self.children)
+
+    def GetChild(self,index):
+        return self.children[index]
+
+    def AddChild(self, childNode):
+        self.children.append(childNode)
+
+    def GetNodeGlobalTransform(self,time):
+        return self.npMx[time].reshape(4,4)

@@ -107,7 +107,7 @@
         <item>
          <widget class="QCheckBox" name="predictedCheckbox">
           <property name="text">
-           <string>Calculated</string>
+           <string>Predicted</string>
           </property>
          </widget>
         </item>
@@ -296,7 +296,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Calculate</string>
+           <string>Train</string>
           </property>
          </widget>
         </item>
@@ -315,7 +315,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Cancel</string>
+           <string>Terminate</string>
           </property>
          </widget>
         </item>

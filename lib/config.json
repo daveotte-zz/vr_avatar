@@ -1,5 +1,5 @@
 {
-    "fbxGroup":
+    "sceneGroup":
         [
 
             {
@@ -229,7 +229,7 @@
                             ["lHand", "world"],    
                             ["hip", "world"] 
                         ],
-                "method": "predictHip",
+                "fbxMethod": "predictHip",
                 "logDir":"/home/daveotte/work/trials",
                 "weightsFileName": "/home/daveotte/work/nn_weights/predictHip.h5",
                 "nnFileName": "/home/daveotte/work/nn_weights/predictHip.json",
@@ -245,7 +245,7 @@
                             ["lHand", "world"],    
                             ["rShldr", "world"] 
                         ],
-                "method": "predictShldr",
+                "fbxMethod": "predictShldr",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 1
             },
@@ -259,21 +259,8 @@
                             ["rForeArm", "world"] 
 
                         ],
-                "method": "predictElbow",
-                "logDir":"/home/daveotte/work/trials",
-                "epochs": 80
-            },
-            {
-                "name": "predictElbowVive",
-                "transforms":
-                        [   
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["lHand", "world"],    
-                            ["rForeArm", "world"] 
-
-                        ],
-                "method": "predictElbowVive",
+                "fbxMethod": "predictElbow",
+                "viveMethod": "predictElbowVive",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 80
             },            {
@@ -286,7 +273,7 @@
                             ["rForeArm", "world"] 
 
                         ],
-                "method": "predictElbow",
+                "fbxMethod": "predictElbow",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 200
             },
@@ -318,7 +305,7 @@
                             ["lFoot", "world"],    
                             ["lForeArm", "world"]
                         ],
-                "method": "predictEverything",
+                "fbxMethod": "predictEverything",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 100
             },
@@ -331,7 +318,7 @@
                             ["lHand", "world"],    
                             ["rForeArm", "world"]
                         ],
-                "method": "predictElbowsVel",
+                "fbxMethod": "predictElbowsVel",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 200
             },
@@ -344,12 +331,12 @@
                             ["lHand", "world"],    
                             ["rForeArm", "world"]
                         ],
-                "method": "predictElbowsVel2",
+                "fbxMethod": "predictElbowsVel2",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 200
             }      
        ],
     "trainingGroupIndices": [2],
-    "testingGroupIndices": [200],
-    "nnConfigs": ["predictShldr","predictElbow","predictElbowVive","predictElbowTest","predictElbowsVel","predictElbowsVel2"]
+    "testingGroupIndices": [200,100],
+    "nnConfigs": ["predictElbow"]
 }

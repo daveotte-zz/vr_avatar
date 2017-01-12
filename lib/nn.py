@@ -90,5 +90,4 @@ class NN(object):
         return model
 
 
-def predict(model,inputData):
-    return model.predict_on_batch(inputData)
+

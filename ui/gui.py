@@ -5,27 +5,23 @@ from OpenGL.GL import *
 import numpy as np
 from camera import Camera
 import re
-import lib.matrixUtil as mxUtil
+import lib.util as util
 
 class UI(QtGui.QMainWindow):
     def __init__(self, App):
         app = QtGui.QApplication(sys.argv)
         super(UI, self).__init__()
-        self.App = App
-
-        #nnConfigs as keys, nnData as values
-        self.nnDataDict = self.App.nnTrainDataDict
-        self.nnConfigs = self.App.nnConfigs
         
         uic.loadUi('./ui/gui.ui', self)
         
         ###GRAPHIC WIDGET
-        self.graphicViewObj = Viewer3DWidget(self)
-        self.graphicViewObj.nnDataDict = self.nnDataDict
-        self.graphicViewObj.frame = 0
-        self.graphicViewerWindow.addWidget(self.graphicViewObj)
+        self.graphicsObj = Viewer3DWidget(self)
+        #self.graphicsObj.engineDict = self.engineDict
+        self.graphicViewerWindow.addWidget(self.graphicsObj)
         self.setStyleSheet(open('./ui/dark.qss').read())
         
+        self.graphicsObj.app = App
+
         self.setup()
         self.show()
         self.drawCurrentFrame()
@@ -33,38 +29,38 @@ class UI(QtGui.QMainWindow):
         
         
     def setup(self):
-        self.populateConfigurationsList()
+        self.populateEnginesList()
         self.populateSceneList()
         self.timeSlider.valueChanged.connect(self.drawCurrentFrame)
-        self.graphicViewObj.transformScale = 1.0
+        self.graphicsObj.transformScale = 1.0
 
 
         ######SHOW STUFF OR NOT
-        self.graphicViewObj.showSkeleton = self.skeletonCheckbox.isChecked()
+        self.graphicsObj.showSkeleton = self.skeletonCheckbox.isChecked()
         self.skeletonCheckbox.stateChanged.connect(self.setShowSkeleton)
 
-        self.graphicViewObj.showTransforms = self.transformsCheckbox.isChecked()
+        self.graphicsObj.showTransforms = self.transformsCheckbox.isChecked()
         self.transformsCheckbox.stateChanged.connect(self.setShowTransforms)
 
-        self.graphicViewObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
+        self.graphicsObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
         self.skeletonRecomposedCheckbox.stateChanged.connect(self.setShowSkeletonRecomposed)
 
-        self.graphicViewObj.showExtractedTransforms = self.extractedCheckbox.isChecked()
-        self.extractedCheckbox.stateChanged.connect(self.setShowExtractedTransforms)
+        self.graphicsObj.showExtracted = self.extractedCheckbox.isChecked()
+        self.extractedCheckbox.stateChanged.connect(self.setshowExtracted)
 
-        self.graphicViewObj.showManipulatedTransforms = self.manipulatedCheckbox.isChecked()
-        self.manipulatedCheckbox.stateChanged.connect(self.setShowManipulatedTransforms)
+        self.graphicsObj.showManipulated = self.manipulatedCheckbox.isChecked()
+        self.manipulatedCheckbox.stateChanged.connect(self.setshowManipulated)
 
-        self.graphicViewObj.showPredictedTransforms = self.predictedCheckbox.isChecked()
-        self.predictedCheckbox.stateChanged.connect(self.setShowPredictedTransforms)
+        self.graphicsObj.showPredicted = self.predictedCheckbox.isChecked()
+        self.predictedCheckbox.stateChanged.connect(self.setShowPredicted)
 
-        self.graphicViewObj.showRecompose = self.recomposeCheckbox.isChecked()
+        self.graphicsObj.showRecompose = self.recomposeCheckbox.isChecked()
         self.recomposeCheckbox.stateChanged.connect(self.setShowRecompose)
 
         self.startFrameSpinBox.valueChanged.connect(self.setTimeSliderStart)
         self.endFrameSpinBox.valueChanged.connect(self.setTimeSliderEnd)
 
-        self.graphicViewObj.showGrid = self.gridCheckbox.isChecked()
+        self.graphicsObj.showGrid = self.gridCheckbox.isChecked()
         self.gridCheckbox.stateChanged.connect(self.setShowGrid)
 
 
@@ -73,12 +69,11 @@ class UI(QtGui.QMainWindow):
         self.terminatePushButton.pressed.connect(self.terminate)
 
         #####SET WHAT'S CURRENT INITIALLY
-        self.graphicViewObj.scene = self.getScene()
-        self.graphicViewObj.nnConfig = self.getNnConfig()
-        self.graphicViewObj.nnData = self.nnDataDict[self.graphicViewObj.nnConfig]
+        self.graphicsObj.app.setEngine = self.getEngineName()
+        self.graphicsObj.app.engine.setScene(self.getSceneName())
         
         ######TIMELINE
-        self.timeLine =  QtCore.QTimeLine(1000)
+        self.timeLine = QtCore.QTimeLine(1000)
         self.timeLine.setLoopCount(0)
         self.timeLine.setCurveShape(3)
         self.fps = 24
@@ -88,7 +83,7 @@ class UI(QtGui.QMainWindow):
 
         ####CONNECT UI ACTIONS TO METHOD CALLS
         self.sceneList.itemSelectionChanged.connect(self.updateForSceneChange)
-        self.configurationsList.itemSelectionChanged.connect(self.updateForConfigChange)
+        self.configurationsList.itemSelectionChanged.connect(self.updateForEngineChange)
 
         #connect timeSlider to timeLine
         self.timeSlider.sliderPressed.connect(self.stopTimeline)
@@ -104,7 +99,7 @@ class UI(QtGui.QMainWindow):
         self.scaleTransforms()
         self.transformScaleSlider.valueChanged.connect(self.scaleTransforms)
 
-
+        self.updateForSceneChange()
 
     def keyPressEvent(self, event):
         print "Key Pressed."
@@ -141,7 +136,7 @@ class UI(QtGui.QMainWindow):
         self.timeLine.setFrameRange(self.timeSlider.minimum(),self.timeSlider.maximum())
 
     def stopTimeline(self):
-        print "StimeLine State: %s"%(self.timeLine.state())
+        print "TimeLine State: %s"%(self.timeLine.state())
         if self.timeLine.state() == 2:
             print "Stopping playback."
             self.timeLine.setPaused(True)
@@ -189,122 +184,113 @@ class UI(QtGui.QMainWindow):
         self.timeSlider.setValue(int(self.timeLine.currentFrame()))
 
     def run(self):
-        self.App.run(self.graphicViewObj.nnConfig)
+        self.graphicsObj.app.run(self.graphicsObj.nnConfig)
 
     def terminate(self):
-        self.App.terminate(self.graphicViewObj.nnConfig)
+        self.graphicsObj.app.terminate()
 
-    def predict(self):
-        self.App.predict()
-        
     def setTimeSliderStart(self):
         self.timeSlider.setMinimum(int(self.startFrameSpinBox.value()))
 
     def setTimeSliderEnd(self):
         self.timeSlider.setMaximum(int(self.endFrameSpinBox.value()))
 
-    def populateConfigurationsList(self):
-        self.configBaseName2Object = {}
-        for nnConfig in self.nnConfigs:
-            self.configurationsList.addItem(nnConfig.title)
-            self.configBaseName2Object[nnConfig.title] = nnConfig
+    def populateEnginesList(self):
+        self.uiEngineName2ObjectName = {}
+        for engine in self.graphicsObj.app.engines:
+            self.configurationsList.addItem(engine.title)
+            self.uiEngineName2ObjectName[engine.title] = engine.name
 
-        for nnConfigName in self.configBaseName2Object.keys():
-            print "Key is: %s nnConfig is: %s"%(nnConfigName,self.configBaseName2Object[nnConfigName].title)
+        for engineTitle in self.uiEngineName2ObjectName.keys():
+            print "Key is: %s engine name is: %s"%(engineTitle,self.uiEngineName2ObjectName[engineTitle])
             
     def populateSceneList(self):
         """
-        populate list with all training and testing data (fbx scenes)
+        Populate list with all training and testing data (fbx scenes)
         """
-        self.sceneBaseName2Object = {}
-        for item in self.App.fbxTrainingScenes:
-            self.sceneList.addItem(item.basename)
-            #a dict we can use to get the object given the basename
-            self.sceneBaseName2Object[item.basename] = item
+        self.uiSceneName2ObjectName = {}
+        for scene in self.graphicsObj.app.trainingScenes:
+            self.sceneList.addItem(scene.title)
+            #a dict we can use to get the object name given the title
+            self.uiSceneName2ObjectName[scene.title] = scene.title
         
-        for item in self.App.fbxTestingScenes:
-            itemGuiName = item.basename+" verify."
+        for scene in self.graphicsObj.app.testingScenes:
+            itemGuiName = scene.title + " TEST"
             self.sceneList.addItem(itemGuiName)
-            #a dict we can use to get the object given the basename
-            self.sceneBaseName2Object[itemGuiName] = item
+            #a dict we can use to get the object name given the basename
+            self.uiSceneName2ObjectName[itemGuiName] = scene.title
 
 
     def scaleTransforms(self):
         """
         Apply a scale the matrix axes.
         """
-        self.graphicViewObj.transformScale = float(self.transformScaleSlider.value())
-        self.graphicViewObj.updateGL()
+        self.graphicsObj.transformScale = float(self.transformScaleSlider.value())
+        self.graphicsObj.updateGL()
 
-    def setShowExtractedTransforms(self):
-        self.graphicViewObj.showExtractedTransforms = self.extractedCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
+    def setshowExtracted(self):
+        self.graphicsObj.showExtracted = self.extractedCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
-    def setShowManipulatedTransforms(self):
-        self.graphicViewObj.showManipulatedTransforms = self.manipulatedCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
+    def setshowManipulated(self):
+        self.graphicsObj.showManipulated = self.manipulatedCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
-    def setShowPredictedTransforms(self):
-        self.graphicViewObj.showPredictedTransforms = self.predictedCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
+    def setShowPredicted(self):
+        self.graphicsObj.showPredicted = self.predictedCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
     def setShowRecompose(self):
-        self.graphicViewObj.showRecompose = self.recomposeCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
-
+        self.graphicsObj.showRecompose = self.recomposeCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
     def setShowSkeleton(self):
-        self.graphicViewObj.showSkeleton = self.skeletonCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
+        self.graphicsObj.showSkeleton = self.skeletonCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
     def setShowSkeletonRecomposed(self):
-        self.graphicViewObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
-
+        self.graphicsObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
     def setShowTransforms(self):
-        self.graphicViewObj.showTransforms = self.transformsCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
+        self.graphicsObj.showTransforms = self.transformsCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
     def setShowGrid(self):
-        self.graphicViewObj.showGrid = self.gridCheckbox.isChecked()
-        self.graphicViewObj.updateGL()
+        self.graphicsObj.showGrid = self.gridCheckbox.isChecked()
+        self.graphicsObj.updateGL()
 
-    def updateForConfigChange(self):
-        self.graphicViewObj.nnConfig = self.getNnConfig()
-        self.graphicViewObj.nnData = self.nnDataDict[self.graphicViewObj.nnConfig]
+    def updateForEngineChange(self):
+        self.graphicsObj.app.setEngine = self.getEngineName()
         self.updateForSceneChange()
 
     def updateForSceneChange(self):
-        self.graphicViewObj.scene = self.getScene()
-        self.startFrameSpinBox.setMinimum(self.graphicViewObj.scene.startTime)
-        self.startFrameSpinBox.setMaximum(self.graphicViewObj.scene.endTime)
-        self.startFrameSpinBox.setValue(self.graphicViewObj.scene.startTime)
+        self.graphicsObj.app.engine.setScene(self.getSceneName())
+        self.startFrameSpinBox.setMinimum(self.graphicsObj.app.engine.scene.startTime)
+        self.startFrameSpinBox.setMaximum(self.graphicsObj.app.engine.scene.endTime)
+        self.startFrameSpinBox.setValue(self.graphicsObj.app.engine.scene.startTime)
 
-        self.endFrameSpinBox.setMinimum(self.graphicViewObj.scene.startTime)
-        self.endFrameSpinBox.setMaximum(self.graphicViewObj.scene.endTime)
-        self.endFrameSpinBox.setValue(self.graphicViewObj.scene.endTime)
-        self.graphicViewObj.updateGL()
+        self.endFrameSpinBox.setMinimum(self.graphicsObj.app.engine.scene.startTime)
+        self.endFrameSpinBox.setMaximum(self.graphicsObj.app.engine.scene.endTime)
+        self.endFrameSpinBox.setValue(self.graphicsObj.app.engine.scene.endTime)
+        self.graphicsObj.updateGL()
 
     #Draw entire skeleton
     def drawCurrentFrame(self):
-        print 'drawing'
-        #do I need to call this, or just self.graphicViewObj.updateGL()?
-        
-        self.graphicViewObj.frame = int(self.timeSlider.value())
-        self.graphicViewObj.updateGL()
+        self.graphicsObj.app.engine.frame = int(self.timeSlider.value())
+        self.graphicsObj.updateGL()
 
-    def getScene(self):
+    def getSceneName(self):
         selectedItems = self.sceneList.selectedItems()
         if len(selectedItems) > 0:
             item = selectedItems[0]
         else:
             item = self.sceneList.item(0)
         print "Scene is now: %s"%str(item.text())
-        scene = self.sceneBaseName2Object[str(item.text())]
-        return self.sceneBaseName2Object[str(item.text())]
+        sceneName = self.uiSceneName2ObjectName[str(item.text())]
+        return sceneName
 
-    def getNnConfig(self):
+    def getEngineName(self):
         selectedItems = self.configurationsList.selectedItems()
         i = 0
         for item in selectedItems:
@@ -316,10 +302,7 @@ class UI(QtGui.QMainWindow):
         else:
             item = self.configurationsList.item(0)
         
-        return self.configBaseName2Object[str(item.text())]
-
-    def getNNData(self):
-        return 
+        return self.uiEngineName2ObjectName[str(item.text())]
 
 class Viewer3DWidget(QGLWidget):
     def __init__(self, parent):
@@ -336,8 +319,6 @@ class Viewer3DWidget(QGLWidget):
         format.setSampleBuffers(True)
         self.setFormat(format)
         self.transformScale = 1.0
-
-
 
     def paintGL(self):
         glEnable(GL_MULTISAMPLE)
@@ -357,38 +338,22 @@ class Viewer3DWidget(QGLWidget):
 
         if self.showSkeleton:
             self.drawSkeleton()
-
-
-        if self.showSkeletonRecomposed:
-            if self.scene.basename.endswith('.fbx'):
-                self.drawSkeletonNoElbow()
-                #attempt to draw the predicted arm.
-                #rShldrPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rShldr', self.frame))
-                #pointA = [self.nnData.drawRecomposePos[0],self.nnData.drawRecomposePos[1],self.nnData.drawRecomposePos[2]]
-                #pointB = [rShldrPos[0],rShldrPos[1],rShldrPos[2]]
-
-                #mxUtil.drawLine(pointA,pointB)
-                #rHandPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rHand', self.frame))
-                #pointB = [rHandPos[0],rHandPos[1],rHandPos[2]]
-                #mxUtil.drawLine(pointA,pointB)   
-
-            else:
-                self.scene.drawAtFrame(self.frame, self.transformScale)
         
-        if self.showExtractedTransforms:
-            self.nnData.drawExtractedTransformsAtFrame(self.scene, self.frame, self.transformScale)
+        if self.showExtracted:
+            self.app.engine.drawExtracted(self.transformScale)
 
-        if self.showManipulatedTransforms:
-            self.nnData.drawManipulatedTransformsAtFrame(self.scene, self.frame, self.transformScale)
+        if self.showManipulated:
+            self.app.engine.drawManipulated(self.transformScale)
 
-        if self.showPredictedTransforms:
-            self.nnData.drawPredictedAtFrame(self.scene, self.frame)
+        if self.showPredicted:
+            self.app.engine.drawPredicted(self.transformScale)
 
         if self.showRecompose:
-            self.nnData.operation.rShldrPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rShldr', self.frame)).tolist()
-            self.nnData.operation.rHandPos = mxUtil.getPosArray(self.scene.getFbxNodeNpTransformAtFrame('rHand', self.frame)).tolist()
-            self.nnData.drawRecomposeAtFrame(self.scene, self.frame)
-     
+            self.app.engine.drawRecomposed(self.transformScale)
+ 
+        if self.showSkeletonRecomposed:
+            self.app.engine.drawSkeletonRecomposed(self.transformScale)
+    
         glFlush()
 
     def resizeGL(self, widthInPixels, heightInPixels):
@@ -432,94 +397,7 @@ class Viewer3DWidget(QGLWidget):
         Draw skeleton with lines from parent to child.
         Then draw xform of each node in skeleton.
         """
-        glColor3f(1.0,1.0,1.0);
-        glLineWidth(1)
-        glBegin(GL_LINE_STRIP)
-        self.drawSkeltonLines(self.scene.jointRoot,0)
-        glEnd()
-        if self.showTransforms:
-            self.drawSkeletonTransforms()
-
-
-    def drawSkeletonNoElbow(self):
-        """
-        Draw skeleton with lines from parent to child.
-        Then draw xform of each node in skeleton.
-        """
-        glColor3f(1.0,1.0,1.0);
-        glLineWidth(1)
-        glBegin(GL_LINE_STRIP)
-        self.drawSkeltonLinesNoElbow(self.scene.jointRoot,0)
-        glEnd()
-        #self.drawSkeletonTransforms()
-
-    def drawSkeltonLines(self, pNode, pDepth):
-        """
-        Walk hierarchy to draw lines from parent to children
-        by walking hierarchy.
-        """
-        lString = ""
-        for i in range(pDepth):
-            lString += "     "
-        lString += pNode.GetName()
-        #print(lString)
-             
-        for i in range(pNode.GetChildCount()):
-            mx = self.scene.getNpGlobalTransform(pNode.GetName(), self.frame )
-
-            glVertex3fv(mx[3,0:3]) 
-            mx = self.scene.getNpGlobalTransform(pNode.GetChild(i).GetName(), self.frame )
-            glVertex3fv(mx[3,0:3])  
-            if pNode.GetChild(i).GetChildCount():
-                self.drawSkeltonLines(pNode.GetChild(i), pDepth + 1)
-            else:
-                glEnd()
-                glBegin(GL_LINE_STRIP)
-
-    def drawSkeltonLinesNoElbow(self, pNode, pDepth):
-        """
-        Walk hierarchy to draw lines from parent to children
-        by walking hierarchy.
-        """
-        lString = ""
-        for i in range(pDepth):
-            lString += "     "
-        lString += pNode.GetName()
-        #print(lString)
-             
-        for i in range(pNode.GetChildCount()):
-            print str(pNode.GetChild(i).GetName())
-            if str(pNode.GetChild(i).GetName()).__contains__("rForeArm") or str(pNode.GetChild(i).GetName()).__contains__("rHand"):
-                glEnd()
-                glBegin(GL_LINE_STRIP)
-            else:
-                mx = self.scene.getNpGlobalTransform(pNode.GetName(), self.frame )
-                glVertex3fv(mx[3,0:3]) 
-                mx = self.scene.getNpGlobalTransform(pNode.GetChild(i).GetName(), self.frame )
-                glVertex3fv(mx[3,0:3])  
-
-            if pNode.GetChild(i).GetChildCount():
-                self.drawSkeltonLinesNoElbow(pNode.GetChild(i), pDepth + 1)
-            else:
-                glEnd()
-                glBegin(GL_LINE_STRIP)
-
-    def drawSkeletonTransforms(self):
-        for nodeName in self.scene.skeletonNodeNameList:
-            mxUtil.drawMx(self.scene.getFbxNodeNpTransformAtFrame(nodeName, self.frame),self.transformScale)
-
-
-    def drawExtractedTransforms(self):
-        self.drawMxs(self.extractedTransforms)
-
-    def drawManipulatedTransforms(self):
-        self.opObj.transformScale = self.transformScale
-        self.opObj.draw()
-
-
-    def drawMxs(self, transformList):
-        for mx in transformList:
-            mxUtil.drawMx(mx,self.transformScale)
+        self.app.engine.drawSkeleton(self.transformScale,self.showTransforms)
 
     def drawGrid(self,size=1000,interval=50):
         """

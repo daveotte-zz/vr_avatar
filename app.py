@@ -4,6 +4,7 @@ from ui.gui import UI
 import sys
 import sys
 from lib.data import *
+from lib.engine import *
 from lib.nn import *
 from keras.models import Sequential
 from keras.models import model_from_json
@@ -19,55 +20,44 @@ import json
 import time
 from threading import Thread
 
-
 # Application class
 class App(object):
     def __init__(self):
-        jsonNodes               = json.loads(open(getJsonFile()).read())
-        self.fbxTrainingScenes  = fbxManager(jsonNodes['trainingGroupIndices']).fbxScenes
-        self.fbxTestingScenes   = fbxManager(jsonNodes['testingGroupIndices']).fbxScenes
+        jsonNodes               = json.loads(open(util.getJsonFile()).read())
+        self.trainingScenes  = sceneManager(jsonNodes['trainingGroupIndices']).scenes
+        self.testingScenes   = sceneManager(jsonNodes['testingGroupIndices']).scenes
 
-        #initializing takes a long time if done one at a time, so:
-        '''
-        for fbxScene in self.fbxTrainingScenes:
-            fbxScene.thread = Thread(target=self.initializeFbxScene, args=(fbxScene,))
-            fbxScene.thread.start()
-        '''
-        self.nnConfigs          = nnConfigDataManager(jsonNodes['nnConfigs']).nnConfigs
+        self.engines = []
+        for nnConfig in nnConfigDataManager(jsonNodes['nnConfigs']).nnConfigs:
+            self.engines.append(engine(nnConfig, self.trainingScenes, self.testingScenes))
 
-        self.nnTestDataDict = {}
-        self.nnTrainDataDict = {}
-        self.nns = []
-        for nnConfig in self.nnConfigs:
-            #store nn's as dict (self.nnTest/TrainDataDict), AND a list (self.nns)
-            nnDataObj = nnData(nnConfig, self.fbxTrainingScenes)
-            self.nnTrainDataDict[nnConfig] = nnDataObj
-            self.nns.append(NN(nnDataObj))
+        #initially just make the first engine the current engine.
+        self.engine = self.engines[0]
         
-    def run(self,nnConfig):
-        nn = self.getNnByNnConfig(nnConfig)
-        nn.run()
-        #nn.job = Process(target=runNN, args=(nn,))
-        #nn.job.start()
+    def run(self):
+        self.nn = NN(self.engine).run()
+        #nn.run()
+        self.nn.job = Process(target=runNN, args=(nn,))
+        self.nn.job.start()
 
-    def terminate(self,nnConfig):
-        nn = self.getNnByNnConfig(nnConfig)
-        print "========================Terminating: %s========================"%(nn.nnData.nnConfig.name)
-        nn.job.terminate()
+    def terminate(self):
+        print "========================Terminating: %s========================"%(nn.engine.nnConfig.name)
+        self.nn.job.terminate()
 
+    def initializeScene(self,scene): 
+        scene.initialize()
 
-    def getNnByNnConfig(self,nnConfig):
-        for nn in self.nns:
-            if nnConfig.name == nn.nnData.nnConfig.name:
-                return nn
-
-    def initializeFbxScene(self,fbxScene):
-        fbxScene.initialize()
+    def setEngine(self,engineName):
+        for engine in self.engines:
+            if engine.name == engineName:
+                self.engine = engine
+                return
+        print "Engine: %s does not exist."%(engineName)
 
 def runNN(nn):
-    print "========================Training: %s========================"%(nn.nnData.nnConfig.name)
+    print "========================Training: %s========================"%(nn.engine.nnConfig.name)
     nn.run()
-    print "========================Finished training: %s========================"%(nn.nnData.nnConfig.name)
+    print "========================Finished training: %s========================"%(nn.engine.nnConfig.name)
 
 if __name__ == "__main__":
     if len(sys.argv)==1:
@@ -75,12 +65,9 @@ if __name__ == "__main__":
     app = App()
     if sys.argv[1] == "-noGui":
         #train all nn's
-        for nn in app.nns:
+        for engine in app.engines:
+            nn= NN(engine)
             nn.job = Process(target=runNN, args=(nn,))
             nn.job.start()
     else:
         ApplicationUI = UI(app)
-
-
-
-   #main(sys.argv)

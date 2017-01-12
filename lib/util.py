@@ -1,4 +1,5 @@
-
+import os
+import re
 import numpy as np
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
@@ -6,6 +7,35 @@ from OpenGL.GL import *
 pyListType = type([])
 npListType = type(np.arange(1))
 npMxType = type(np.matrix(1))
+
+
+
+class colors(object):
+    """
+    An object with color names as attributes, and values that
+    correspond to RGB v3 values.
+    """
+    def __init__(self):
+        self.magenta    = [1.0,0.0,1.0]
+        self.white      = [1.0,1.0,1.0]
+        self.blue       = [0.0,0.0,1.0]
+
+color = colors()
+
+
+def predict(model,inputData):
+    return model.predict_on_batch(inputData)
+
+def camel2Title(camel):
+    return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', camel).title()#.replace('Predict ', '')
+
+
+def getJsonFile():
+    '''
+    Return abs path to json file.
+    '''
+    return os.path.dirname(__file__) + '/config.json'
+
 
 def fbxMxtoList(fbxMx):
     """
@@ -94,6 +124,9 @@ def setPos(mx4, v3):
     mx4[3:4,0:3] = v3
     return mx4
 
+def drawMxs(mxs,transformScale):
+    for mx in mxs:
+        drawMx(mx,transformScale)
 
 def drawMx(mx,transformScale=1.0):
     """
@@ -128,7 +161,12 @@ def drawMx(mx,transformScale=1.0):
 
     glLoadIdentity()    
 
-def drawPos(v3,size=6,color=[1.0,1.0,0.0]):
+def drawPoints(v3List,size=6,color=[1.0,1.0,0.0]):
+    for point in v3List:
+        drawPoint(point,size,color)
+
+
+def drawPoint(v3,size=6,color=[1.0,1.0,0.0]):
     """
     Draw a vector (a dot) given
     x,y,z
@@ -153,5 +191,4 @@ def drawLine(pointA, pointB, size=1,color=[1.0,1.0,1.0]):
 
 def identity():
     return np.matrix(np.identity(4))
-
 
