@@ -69,7 +69,7 @@ class UI(QtGui.QMainWindow):
         self.terminatePushButton.pressed.connect(self.terminate)
 
         #####SET WHAT'S CURRENT INITIALLY
-        self.graphicsObj.app.setEngine = self.getEngineName()
+        self.graphicsObj.app.setEngine(self.getEngineName())
         self.graphicsObj.app.engine.setScene(self.getSceneName())
         
         ######TIMELINE
@@ -184,7 +184,7 @@ class UI(QtGui.QMainWindow):
         self.timeSlider.setValue(int(self.timeLine.currentFrame()))
 
     def run(self):
-        self.graphicsObj.app.run(self.graphicsObj.nnConfig)
+        self.graphicsObj.app.run()
 
     def terminate(self):
         self.graphicsObj.app.terminate()
@@ -261,7 +261,7 @@ class UI(QtGui.QMainWindow):
         self.graphicsObj.updateGL()
 
     def updateForEngineChange(self):
-        self.graphicsObj.app.setEngine = self.getEngineName()
+        self.graphicsObj.app.setEngine(self.getEngineName())
         self.updateForSceneChange()
 
     def updateForSceneChange(self):
@@ -294,14 +294,11 @@ class UI(QtGui.QMainWindow):
         selectedItems = self.configurationsList.selectedItems()
         i = 0
         for item in selectedItems:
-            print  str(i) + " " + item.text()
             i = i+1
         if len(selectedItems) > 0:
             item = selectedItems[0]
-            print "selected is now: %s"%str(selectedItems[0].text())
         else:
             item = self.configurationsList.item(0)
-        
         return self.uiEngineName2ObjectName[str(item.text())]
 
 class Viewer3DWidget(QGLWidget):

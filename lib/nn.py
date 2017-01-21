@@ -1,7 +1,7 @@
 
 
 import sys
-#from data import datamanafbxManager, nnConfigDataManager, nnData, transformsFilesManager
+#from data import datamanafbxManager, nnConfigDataManager, engine, transformsFilesManager
 from keras.models import Sequential
 from keras.models import model_from_json
 from keras.layers import Dense
@@ -17,70 +17,71 @@ from shutil import copyfile
 
 
 class NN(object):
-    def __init__(self,nnData):
-        self.nnData = nnData
-        self.name = self.nnData.nnConfig.name
+    def __init__(self,engine):
+        self.engine = engine
+        self.name = self.engine.name
 
     def run(self):
-        self.nnData.write()
+        #self.engine.write()
+        if not self.engine.data:
+            self.engine.setData()
         print "inputStart: %d, inputEnd: %d, outputStart: %d, outputEnd: %d" % \
-                                    (self.nnData.inputStart,
-                                     self.nnData.inputEnd,  
-                                     self.nnData.outputStart,
-                                     self.nnData.outputEnd)
+                                    (self.engine.inputStart,
+                                     self.engine.inputEnd,  
+                                     self.engine.outputStart,
+                                     self.engine.outputEnd)
         
         inputData, outputData = self.data()
         model = self.model()
-        model.fit(inputData,outputData, nb_epoch=self.nnData.nnConfig.epochs, batch_size=1)
+        model.fit(inputData,outputData, nb_epoch=self.engine.nnConfig.epochs, batch_size=50)
         self.write(model)
 
     def write(self,model):
-        writeDir = self.nnData.nnConfig.writeWeightsFile.dirname()
+        writeDir = self.engine.nnConfig.writeWeightsFile.dirname()
         if not writeDir.isdir():
             print "Making log dir: %s"%(writeDir)
             writeDir.makedirs()
 
-        print "Writing: %s"%(self.nnData.nnConfig.writeWeightsFile)
-        model.save_weights(self.nnData.nnConfig.writeWeightsFile)
-
-
+        print "Writing: %s"%(self.engine.nnConfig.writeWeightsFile)
+        model.save_weights(self.engine.nnConfig.writeWeightsFile)
  
-        print "Writing: %s"%(self.nnData.nnConfig.writeNnFile)
-        jsonFile = open(self.nnData.nnConfig.writeNnFile,'w')
+        print "Writing: %s"%(self.engine.nnConfig.writeNnFile)
+        jsonFile = open(self.engine.nnConfig.writeNnFile,'w')
         jsonFile.write(model.to_json())
         jsonFile.close()
 
-        print "Copying config: %s"%self.nnData.nnConfig.configFile
-        copyfile(self.nnData.nnConfig.configFile, self.nnData.nnConfig.writeConfigFile)
+        print "Copying config: %s"%self.engine.nnConfig.configFile
+        copyfile(self.engine.nnConfig.configFile, self.engine.nnConfig.writeConfigFile)
 
-        print "Copying operations.py: %s"%self.nnData.nnConfig.operationsFile
-        copyfile(self.nnData.nnConfig.operationsFile, self.nnData.nnConfig.writeOperationsFile)
+        print "Copying operations.py: %s"%self.engine.nnConfig.operationsFile
+        copyfile(self.engine.nnConfig.operationsFile, self.engine.nnConfig.writeOperationsFile)
 
         print "Ticking up the write/read paths."
-        self.nnData.nnConfig.setUpLoadPaths()
+        self.engine.nnConfig.setUpLoadPaths()
         print "Reloading NN models."
-        self.nnData.loadModel()
-
+        self.engine.loadModel()
 
     def data(self):
         seed = 7
         np.random.seed(seed)
-        dataSet = np.array(self.nnData.data)
+        dataSet = np.array(self.engine.data)
         random.shuffle(dataSet)
 
-        inputData = dataSet[:,self.nnData.inputStart:self.nnData.inputEnd]
-        outputData = dataSet[:,self.nnData.outputStart:self.nnData.outputEnd]
+        inputData = dataSet[:,self.engine.inputStart:self.engine.inputEnd]
+        outputData = dataSet[:,self.engine.outputStart:self.engine.outputEnd]
         
         return inputData, outputData       
 
     def model(self):
         model = Sequential()
 
-        inputDim = self.nnData.inputEnd
-        outputDim = (self.nnData.outputEnd-self.nnData.outputStart)
+        inputDim = self.engine.inputEnd
+        outputDim = (self.engine.outputEnd-self.engine.outputStart)
+
+
         
         model.add(Dense(inputDim, input_dim=inputDim, init='normal', activation='relu'))
-        model.add(Dense(inputDim*50, init='normal', activation='relu'))
+        model.add(Dense(150, init='normal', activation='relu'))
         model.add(Dense(outputDim, init='normal', activation='linear'))
 
         optim=keras.optimizers.Adagrad(lr=0.01, epsilon=1e-08)

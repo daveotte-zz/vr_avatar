@@ -230,22 +230,7 @@
                             ["hip", "world"] 
                         ],
                 "fbxMethod": "predictHip",
-                "logDir":"/home/daveotte/work/trials",
-                "weightsFileName": "/home/daveotte/work/nn_weights/predictHip.h5",
-                "nnFileName": "/home/daveotte/work/nn_weights/predictHip.json",
-                "outputCsvFileName": "/home/daveotte/work/predictHipOutput.csv",
-                "epochs": 1
-            },
-            {
-                "name": "predictShldr",
-                "transforms":
-                        [   
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["lHand", "world"],    
-                            ["rShldr", "world"] 
-                        ],
-                "fbxMethod": "predictShldr",
+                "viveMethod": "predictHipVive",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 1
             },
@@ -263,7 +248,38 @@
                 "viveMethod": "predictElbowVive",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 80
-            },            {
+            },  
+            {
+                "name": "predictShldr",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rShldr", "world"] 
+
+                        ],
+                "fbxMethod": "predictElbow",
+                "viveMethod": "predictElbowVive",
+                "logDir":"/home/daveotte/work/trials",
+                "epochs": 80
+            },    
+            {
+                "name": "predictElbowPosOnly",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rForeArm", "world"] 
+
+                        ],
+                "fbxMethod": "predictElbowPosOnly",
+                "viveMethod": "predictElbowPosOnly",
+                "logDir":"/home/daveotte/work/trials",
+                "epochs": 200
+            },                          
+            {
                 "name": "predictElbowTest",
                 "transforms":
                         [   
@@ -274,6 +290,7 @@
 
                         ],
                 "fbxMethod": "predictElbow",
+                "viveMethod": "predictElbowVive",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 200
             },
@@ -306,37 +323,12 @@
                             ["lForeArm", "world"]
                         ],
                 "fbxMethod": "predictEverything",
+                "viveMethod": "predictEverythingVive",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 100
-            },
-            {
-                "name": "predictElbowsVel",
-                "transforms":
-                        [   
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["lHand", "world"],    
-                            ["rForeArm", "world"]
-                        ],
-                "fbxMethod": "predictElbowsVel",
-                "logDir":"/home/daveotte/work/trials",
-                "epochs": 200
-            },
-            {
-                "name": "predictElbowsVel2",
-                "transforms":
-                        [   
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["lHand", "world"],    
-                            ["rForeArm", "world"]
-                        ],
-                "fbxMethod": "predictElbowsVel2",
-                "logDir":"/home/daveotte/work/trials",
-                "epochs": 200
-            }      
+            }
        ],
-    "trainingGroupIndices": [2],
-    "testingGroupIndices": [200,100],
-    "nnConfigs": ["predictElbow"]
+    "trainingGroupIndices": [2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+    "testingGroupIndices": [23,24,1,200],
+    "nnConfigs": ["predictElbowPosOnly","predictElbow","predictShldr"]
 }

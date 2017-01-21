@@ -22,7 +22,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Systems</string>
+           <string>Engines</string>
           </property>
          </widget>
         </item>

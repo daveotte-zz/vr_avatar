@@ -34,6 +34,7 @@ from DisplayGenericInfo     import DisplayGenericInfo
 from FbxCommon import *
 import numpy as np
 from keras.models import model_from_json
+from keras.models import Sequential
 from pprint import pprint
 
 class engine(object):
@@ -58,22 +59,23 @@ class engine(object):
         #initially just make the first scene the current scene. 
         self.scene = self.trainingScenes[0]
         self.frame = 0
+        self.data = False
 
     @property 
     def title(self):
         return util.camel2Title(self.name)
 
-    def getData(self):
-        data = []
+    def setData(self):
+        self.data = []
         for transforms in self.extractedTransforms():
             inputLinePortion, outputLinePortion = self.fbxOperation.operate(transforms)
             line = inputLinePortion + outputLinePortion
-            data.append(line)
+            self.data.append(line)
         self.inputStart = 0
         self.inputEnd = len(inputLinePortion)
         self.outputStart = self.inputEnd  
         self.outputEnd = self.outputStart + len(outputLinePortion)    
-        return data
+        
 
     def loadModel(self):
         if self.nnConfig.readNnFile.isfile() and self.nnConfig.readWeightsFile.isfile():

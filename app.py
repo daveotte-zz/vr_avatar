@@ -35,13 +35,13 @@ class App(object):
         self.engine = self.engines[0]
         
     def run(self):
-        self.nn = NN(self.engine).run()
+        self.nn = NN(self.engine)
         #nn.run()
-        self.nn.job = Process(target=runNN, args=(nn,))
+        self.nn.job = Process(target=runNN, args=(self.nn,))
         self.nn.job.start()
 
     def terminate(self):
-        print "========================Terminating: %s========================"%(nn.engine.nnConfig.name)
+        print "========================Terminating: %s========================"%(self.nn.name)
         self.nn.job.terminate()
 
     def initializeScene(self,scene): 
@@ -55,9 +55,9 @@ class App(object):
         print "Engine: %s does not exist."%(engineName)
 
 def runNN(nn):
-    print "========================Training: %s========================"%(nn.engine.nnConfig.name)
+    print "========================Training: %s========================"%(nn.name)
     nn.run()
-    print "========================Finished training: %s========================"%(nn.engine.nnConfig.name)
+    print "========================Finished training: %s========================"%(nn.name)
 
 if __name__ == "__main__":
     if len(sys.argv)==1:
