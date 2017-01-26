@@ -93,6 +93,7 @@ class sceneManager(dataManager):
         return self.scenesByGroupIndices(self.groupIndices)
 
     def scenesByGroupIndices(self,groupIndices):
+        print str(groupIndices) + "=========================="
         fbxSceneObjects = []
         for g in self.sceneGroupObjectsByIndices(groupIndices):
             fbxSceneObjects = fbxSceneObjects + g.scenesInGroup()

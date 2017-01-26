@@ -63,7 +63,7 @@ class UI(QtGui.QMainWindow):
         self.graphicsObj.showGrid = self.gridCheckbox.isChecked()
         self.gridCheckbox.stateChanged.connect(self.setShowGrid)
 
-
+        self.updateInspector()
         #####TRAINING
         self.trainPushButton.pressed.connect(self.run)
         self.terminatePushButton.pressed.connect(self.terminate)
@@ -262,7 +262,11 @@ class UI(QtGui.QMainWindow):
 
     def updateForEngineChange(self):
         self.graphicsObj.app.setEngine(self.getEngineName())
+        self.updateInspector()
         self.updateForSceneChange()
+
+    def updateInspector(self):
+        self.inspectorText.setText(self.graphicsObj.app.engine.nnConfig.writeWeightsFile)
 
     def updateForSceneChange(self):
         self.graphicsObj.app.engine.setScene(self.getSceneName())
@@ -334,7 +338,7 @@ class Viewer3DWidget(QGLWidget):
             self.drawGrid()
 
         if self.showSkeleton:
-            self.drawSkeleton()
+            self.app.engine.drawSkeleton(self.transformScale,self.showTransforms)
         
         if self.showExtracted:
             self.app.engine.drawExtracted(self.transformScale)
@@ -349,7 +353,7 @@ class Viewer3DWidget(QGLWidget):
             self.app.engine.drawRecomposed(self.transformScale)
  
         if self.showSkeletonRecomposed:
-            self.app.engine.drawSkeletonRecomposed(self.transformScale)
+            self.app.engine.drawSkeletonRecomposed(self.transformScale,self.showTransforms)
     
         glFlush()
 

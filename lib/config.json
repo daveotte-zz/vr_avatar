@@ -1,216 +1,571 @@
 {
     "sceneGroup":
         [
-
             {
-                "name": "config",
-                "referenceFbx": "/home/daveotte/work/mocap_animations/01/01_02.fbx"
-            },
-            {
-                "name": "playground",
+            "name": "playground",
                 "index":1,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/01/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/01"
             },
             {
-                "name": "walkPunchStrike",
+            "name": "playground",
                 "index":2,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/02/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/02"
             },
             {
-                "name": "walkUnevenTerrain",
+            "name": "playground",
                 "index":3,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/03/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/03"
             },
             {
-                "name": "modernDance",
+            "name": "playground",
                 "index":5,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/05/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/05"
             },
             {
-                "name": "basketBall",
+            "name": "playground",
                 "index":6,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/06/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/06"
             },
             {
-                "name": "walk1",
+            "name": "playground",
                 "index":7,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/07/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/07"
             },
             {
-                "name": "walk2",
+            "name": "playground",
                 "index":8,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/08/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/08"
             },
             {
-                "name": "run",
+            "name": "playground",
                 "index":9,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/09/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/09"
             },
             {
-                "name": "soccer",
+            "name": "playground",
                 "index":10,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/10/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/10"
             },
             {
-                "name": "kickBall",
+            "name": "playground",
+                "index":102,
+                "dir": "/home/daveotte/work/mocap_animations2/102"
+            },
+            {
+            "name": "playground",
+                "index":103,
+                "dir": "/home/daveotte/work/mocap_animations2/103"
+            },
+            {
+            "name": "playground",
+                "index":104,
+                "dir": "/home/daveotte/work/mocap_animations2/104"
+            },
+            {
+            "name": "playground",
+                "index":105,
+                "dir": "/home/daveotte/work/mocap_animations2/105"
+            },
+            {
+            "name": "playground",
+                "index":106,
+                "dir": "/home/daveotte/work/mocap_animations2/106"
+            },
+            {
+            "name": "playground",
+                "index":107,
+                "dir": "/home/daveotte/work/mocap_animations2/107"
+            },
+            {
+            "name": "playground",
+                "index":108,
+                "dir": "/home/daveotte/work/mocap_animations2/108"
+            },
+            {
+            "name": "playground",
                 "index":11,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/11/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/11"
             },
             {
-                "name": "taiChi",
+            "name": "playground",
+                "index":111,
+                "dir": "/home/daveotte/work/mocap_animations2/111"
+            },
+            {
+            "name": "playground",
+                "index":113,
+                "dir": "/home/daveotte/work/mocap_animations2/113"
+            },
+            {
+            "name": "playground",
+                "index":114,
+                "dir": "/home/daveotte/work/mocap_animations2/114"
+            },
+            {
+            "name": "playground",
+                "index":115,
+                "dir": "/home/daveotte/work/mocap_animations2/115"
+            },
+            {
+            "name": "playground",
+                "index":117,
+                "dir": "/home/daveotte/work/mocap_animations2/117"
+            },
+            {
+            "name": "playground",
+                "index":118,
+                "dir": "/home/daveotte/work/mocap_animations2/118"
+            },
+            {
+            "name": "playground",
                 "index":12,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/12/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/12"
             },
             {
-                "name": "everyDayBehaviors",
+            "name": "playground",
+                "index":120,
+                "dir": "/home/daveotte/work/mocap_animations2/120"
+            },
+            {
+            "name": "playground",
+                "index":121,
+                "dir": "/home/daveotte/work/mocap_animations2/121"
+            },
+            {
+            "name": "playground",
+                "index":122,
+                "dir": "/home/daveotte/work/mocap_animations2/122"
+            },
+            {
+            "name": "playground",
+                "index":123,
+                "dir": "/home/daveotte/work/mocap_animations2/123"
+            },
+            {
+            "name": "playground",
+                "index":124,
+                "dir": "/home/daveotte/work/mocap_animations2/124"
+            },
+            {
+            "name": "playground",
+                "index":125,
+                "dir": "/home/daveotte/work/mocap_animations2/125"
+            },
+            {
+            "name": "playground",
+                "index":126,
+                "dir": "/home/daveotte/work/mocap_animations2/126"
+            },
+            {
+            "name": "playground",
+                "index":127,
+                "dir": "/home/daveotte/work/mocap_animations2/127"
+            },
+            {
+            "name": "playground",
+                "index":128,
+                "dir": "/home/daveotte/work/mocap_animations2/128"
+            },
+            {
+            "name": "playground",
                 "index":13,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/13/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/13"
             },
             {
-                "name": "everyDayBehaviors2",
+            "name": "playground",
+                "index":131,
+                "dir": "/home/daveotte/work/mocap_animations2/131"
+            },
+            {
+            "name": "playground",
+                "index":132,
+                "dir": "/home/daveotte/work/mocap_animations2/132"
+            },
+            {
+            "name": "playground",
+                "index":133,
+                "dir": "/home/daveotte/work/mocap_animations2/133"
+            },
+            {
+            "name": "playground",
+                "index":134,
+                "dir": "/home/daveotte/work/mocap_animations2/134"
+            },
+            {
+            "name": "playground",
+                "index":135,
+                "dir": "/home/daveotte/work/mocap_animations2/135"
+            },
+            {
+            "name": "playground",
+                "index":136,
+                "dir": "/home/daveotte/work/mocap_animations2/136"
+            },
+            {
+            "name": "playground",
+                "index":137,
+                "dir": "/home/daveotte/work/mocap_animations2/137"
+            },
+            {
+            "name": "playground",
+                "index":138,
+                "dir": "/home/daveotte/work/mocap_animations2/138"
+            },
+            {
+            "name": "playground",
+                "index":139,
+                "dir": "/home/daveotte/work/mocap_animations2/139"
+            },
+            {
+            "name": "playground",
                 "index":14,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/14/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/14"
             },
             {
-                "name": "everyDayBehaviorsDance",
+            "name": "playground",
+                "index":140,
+                "dir": "/home/daveotte/work/mocap_animations2/140"
+            },
+            {
+            "name": "playground",
+                "index":141,
+                "dir": "/home/daveotte/work/mocap_animations2/141"
+            },
+            {
+            "name": "playground",
+                "index":142,
+                "dir": "/home/daveotte/work/mocap_animations2/142"
+            },
+            {
+            "name": "playground",
+                "index":143,
+                "dir": "/home/daveotte/work/mocap_animations2/143"
+            },
+            {
+            "name": "playground",
+                "index":144,
+                "dir": "/home/daveotte/work/mocap_animations2/144"
+            },
+            {
+            "name": "playground",
                 "index":15,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/15/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/15"
             },
             {
-                "name": "walkingStyles",
+            "name": "playground",
                 "index":16,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/16/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/16"
             },
             {
-                "name": "communicationA",
+            "name": "playground",
                 "index":17,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/17/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/17"
             },
             {
-                "name": "communicationA",
+            "name": "playground",
                 "index":18,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/18/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/18"
             },
             {
-                "name": "communicationB",
+            "name": "playground",
                 "index":19,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/19/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/19"
             },
             {
-                "name": "interactionPlayA",
+            "name": "playground",
                 "index":20,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/20/FBX_2013"
-            },        
+                "dir": "/home/daveotte/work/mocap_animations2/20"
+            },
             {
-                "name": "interactionPlayB",
+            "name": "playground",
                 "index":21,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/21/FBX_2013"
-            },          
+                "dir": "/home/daveotte/work/mocap_animations2/21"
+            },
             {
-                "name": "interactionA",
+            "name": "playground",
                 "index":22,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/22/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/22"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":23,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/23/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/23"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":24,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/24/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/24"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":25,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/25/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/25"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":26,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/26/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/26"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":27,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/27/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/27"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":28,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/28/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/28"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":29,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/29/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/29"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":30,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/30/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/30"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":31,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/31/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/31"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":32,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/32/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/32"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":33,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/33/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/33"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":34,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/34/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/34"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":35,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/35/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/35"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":36,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/36/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/36"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":37,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/37/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/37"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":38,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/38/FBX_2013"
+                "dir": "/home/daveotte/work/mocap_animations2/38"
             },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":39,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/39/FBX_2013"
-            },         
+                "dir": "/home/daveotte/work/mocap_animations2/39"
+            },
             {
-                "name": "interactionB",
+            "name": "playground",
                 "index":40,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/40/FBX_2013"
-            },                  
+                "dir": "/home/daveotte/work/mocap_animations2/40"
+            },
             {
-                "name": "test",
-                "index":0,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/test"
-            },                  
+            "name": "playground",
+                "index":41,
+                "dir": "/home/daveotte/work/mocap_animations2/41"
+            },
             {
-                "name": "test2",
-                "index":100,
-                "dir": "/home/daveotte/work/mocap_animations_with_binary/test"
-            },                  
+            "name": "playground",
+                "index":42,
+                "dir": "/home/daveotte/work/mocap_animations2/42"
+            },
+            {
+            "name": "playground",
+                "index":43,
+                "dir": "/home/daveotte/work/mocap_animations2/43"
+            },
+            {
+            "name": "playground",
+                "index":45,
+                "dir": "/home/daveotte/work/mocap_animations2/45"
+            },
+            {
+            "name": "playground",
+                "index":46,
+                "dir": "/home/daveotte/work/mocap_animations2/46"
+            },
+            {
+            "name": "playground",
+                "index":47,
+                "dir": "/home/daveotte/work/mocap_animations2/47"
+            },
+            {
+            "name": "playground",
+                "index":49,
+                "dir": "/home/daveotte/work/mocap_animations2/49"
+            },
+            {
+            "name": "playground",
+                "index":54,
+                "dir": "/home/daveotte/work/mocap_animations2/54"
+            },
+            {
+            "name": "playground",
+                "index":55,
+                "dir": "/home/daveotte/work/mocap_animations2/55"
+            },
+            {
+            "name": "playground",
+                "index":56,
+                "dir": "/home/daveotte/work/mocap_animations2/56"
+            },
+            {
+            "name": "playground",
+                "index":60,
+                "dir": "/home/daveotte/work/mocap_animations2/60"
+            },
+            {
+            "name": "playground",
+                "index":61,
+                "dir": "/home/daveotte/work/mocap_animations2/61"
+            },
+            {
+            "name": "playground",
+                "index":62,
+                "dir": "/home/daveotte/work/mocap_animations2/62"
+            },
+            {
+            "name": "playground",
+                "index":63,
+                "dir": "/home/daveotte/work/mocap_animations2/63"
+            },
+            {
+            "name": "playground",
+                "index":64,
+                "dir": "/home/daveotte/work/mocap_animations2/64"
+            },
+            {
+            "name": "playground",
+                "index":69,
+                "dir": "/home/daveotte/work/mocap_animations2/69"
+            },
+            {
+            "name": "playground",
+                "index":70,
+                "dir": "/home/daveotte/work/mocap_animations2/70"
+            },
+            {
+            "name": "playground",
+                "index":73,
+                "dir": "/home/daveotte/work/mocap_animations2/73"
+            },
+            {
+            "name": "playground",
+                "index":74,
+                "dir": "/home/daveotte/work/mocap_animations2/74"
+            },
+            {
+            "name": "playground",
+                "index":75,
+                "dir": "/home/daveotte/work/mocap_animations2/75"
+            },
+            {
+            "name": "playground",
+                "index":76,
+                "dir": "/home/daveotte/work/mocap_animations2/76"
+            },
+            {
+            "name": "playground",
+                "index":77,
+                "dir": "/home/daveotte/work/mocap_animations2/77"
+            },
+            {
+            "name": "playground",
+                "index":78,
+                "dir": "/home/daveotte/work/mocap_animations2/78"
+            },
+            {
+            "name": "playground",
+                "index":79,
+                "dir": "/home/daveotte/work/mocap_animations2/79"
+            },
+            {
+            "name": "playground",
+                "index":80,
+                "dir": "/home/daveotte/work/mocap_animations2/80"
+            },
+            {
+            "name": "playground",
+                "index":81,
+                "dir": "/home/daveotte/work/mocap_animations2/81"
+            },
+            {
+            "name": "playground",
+                "index":82,
+                "dir": "/home/daveotte/work/mocap_animations2/82"
+            },
+            {
+            "name": "playground",
+                "index":83,
+                "dir": "/home/daveotte/work/mocap_animations2/83"
+            },
+            {
+            "name": "playground",
+                "index":84,
+                "dir": "/home/daveotte/work/mocap_animations2/84"
+            },
+            {
+            "name": "playground",
+                "index":85,
+                "dir": "/home/daveotte/work/mocap_animations2/85"
+            },
+            {
+            "name": "playground",
+                "index":86,
+                "dir": "/home/daveotte/work/mocap_animations2/86"
+            },
+            {
+            "name": "playground",
+                "index":87,
+                "dir": "/home/daveotte/work/mocap_animations2/87"
+            },
+            {
+            "name": "playground",
+                "index":88,
+                "dir": "/home/daveotte/work/mocap_animations2/88"
+            },
+            {
+            "name": "playground",
+                "index":89,
+                "dir": "/home/daveotte/work/mocap_animations2/89"
+            },
+            {
+            "name": "playground",
+                "index":90,
+                "dir": "/home/daveotte/work/mocap_animations2/90"
+            },
+            {
+            "name": "playground",
+                "index":91,
+                "dir": "/home/daveotte/work/mocap_animations2/91"
+            },
+            {
+            "name": "playground",
+                "index":93,
+                "dir": "/home/daveotte/work/mocap_animations2/93"
+            },
+            {
+            "name": "playground",
+                "index":94,
+                "dir": "/home/daveotte/work/mocap_animations2/94"
+            },
             {
                 "name": "vive_telemetry",
                 "index":200,
@@ -221,6 +576,35 @@
     "nnConfigData":
         [
             {
+                "name": "predictElbowPosRot",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rForeArm", "world"] 
+
+                        ],
+                "fbxMethod": "predictElbowPosRot",
+                "viveMethod": "predictElbowPosRot",
+                "logDir":"/home/daveotte/work/trials",
+                "epochs": 80
+            },  
+            {
+                "name": "predictShldrPosRot",
+                "transforms":
+                        [   
+                            ["head", "world"],
+                            ["rHand", "world"],    
+                            ["lHand", "world"],    
+                            ["rShldr", "world"] 
+
+                        ],
+                "fbxMethod": "predictElbowPosRot",
+                "viveMethod": "predictElbowPosRot",
+                "logDir":"/home/daveotte/work/trials",
+                "epochs": 80
+            },              {
                 "name": "predictHip",
                 "transforms":
                         [   
@@ -235,7 +619,7 @@
                 "epochs": 1
             },
             {
-                "name": "predictElbow",
+                "name": "predictElbowPos",
                 "transforms":
                         [   
                             ["head", "world"],
@@ -244,13 +628,13 @@
                             ["rForeArm", "world"] 
 
                         ],
-                "fbxMethod": "predictElbow",
-                "viveMethod": "predictElbowVive",
+                "fbxMethod": "predictElbowPos",
+                "viveMethod": "predictElbowPosVive",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 80
             },  
             {
-                "name": "predictShldr",
+                "name": "predictShldrPos",
                 "transforms":
                         [   
                             ["head", "world"],
@@ -259,40 +643,10 @@
                             ["rShldr", "world"] 
 
                         ],
-                "fbxMethod": "predictElbow",
-                "viveMethod": "predictElbowVive",
+                "fbxMethod": "predictElbowPos",
+                "viveMethod": "predictElbowPosVive",
                 "logDir":"/home/daveotte/work/trials",
                 "epochs": 80
-            },    
-            {
-                "name": "predictElbowPosOnly",
-                "transforms":
-                        [   
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["lHand", "world"],    
-                            ["rForeArm", "world"] 
-
-                        ],
-                "fbxMethod": "predictElbowPosOnly",
-                "viveMethod": "predictElbowPosOnly",
-                "logDir":"/home/daveotte/work/trials",
-                "epochs": 200
-            },                          
-            {
-                "name": "predictElbowTest",
-                "transforms":
-                        [   
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["lHand", "world"],    
-                            ["rForeArm", "world"] 
-
-                        ],
-                "fbxMethod": "predictElbow",
-                "viveMethod": "predictElbowVive",
-                "logDir":"/home/daveotte/work/trials",
-                "epochs": 200
             },
             {
                 "name": "predictEverything",
@@ -328,7 +682,7 @@
                 "epochs": 100
             }
        ],
-    "trainingGroupIndices": [2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+    "trainingGroupIndices": [2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45, 46, 47, 49, 54, 55, 56, 60, 61, 62, 63, 64, 69, 70, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 93, 94, 102, 103, 104, 105, 106, 107, 108, 111, 113, 114, 115, 117, 118, 120, 121, 122, 123, 124, 125, 126, 127, 128, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144],
     "testingGroupIndices": [23,24,1,200],
-    "nnConfigs": ["predictElbowPosOnly","predictElbow","predictShldr"]
+    "nnConfigs": ["predictShldrPosRot"]
 }

@@ -8,7 +8,7 @@ import sys
 import re
 import util
 from rig.joints import *
-import operations as op
+from lib.operations import *
 from path import Path
 from threading import Thread
 import ast
@@ -135,7 +135,7 @@ class viveScene(scene):
 
     def initialize(self):
         if self.needsInitializing:
-            print "Initializing: %s"%(self.fileName)
+            print "Initializing vive scene: %s"%(self.fileName)
             #load scene into lScene?
             self.needsInitializing          = False
             self.fileLines = [line.rstrip('\r\n') for line in open(self.fileName)]

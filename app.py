@@ -51,6 +51,7 @@ class App(object):
         for engine in self.engines:
             if engine.name == engineName:
                 self.engine = engine
+                self.engine.loadModel()
                 return
         print "Engine: %s does not exist."%(engineName)
 

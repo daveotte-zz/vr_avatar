@@ -7,7 +7,7 @@ import random
 import sys
 import re
 import util 
-import operations as op
+import lib.operations as op
 from path import Path
 from threading import Thread
 import ast
@@ -78,15 +78,9 @@ class engine(object):
         
 
     def loadModel(self):
-        if self.nnConfig.readNnFile.isfile() and self.nnConfig.readWeightsFile.isfile():
-            print "Loading model: %s and %s"%(self.nnConfig.readNnFile, self.nnConfig.readWeightsFile)
-            jsonFile = open(self.nnConfig.readNnFile,'r')
-            jsonString = jsonFile.read().replace('\n', '')
-            model = model_from_json(jsonString)
-            model.load_weights(self.nnConfig.readWeightsFile)
-        else:
-            model =  Sequential()
-        self.viveOperation.model = self.fbxOperation.model = self.model = model 
+        self.fbxOperation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
+        self.viveOperation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
+
 
     def extractedTransforms(self):
         """

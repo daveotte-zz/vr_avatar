@@ -124,6 +124,19 @@ def setPos(mx4, v3):
     mx4[3:4,0:3] = v3
     return mx4
 
+def setRot(mx4,v9):
+    """
+    Set mx4's rot by a list of 9 numbers.
+    """
+    mx4[0:1,0:3] = [v9[0],v9[1],v9[2]]
+    mx4[1:2,0:3] = [v9[3],v9[4],v9[5]]
+    mx4[2:3,0:3] = [v9[6],v9[7],v9[8]]
+    return mx4
+
+def addPosToMx4(mx4,v3):
+    mx4[3:4,0:3]=getPosArray(mx4)+v3
+    return mx4
+
 def drawMxs(mxs,transformScale):
     for mx in mxs:
         drawMx(mx,transformScale)
@@ -191,4 +204,11 @@ def drawLine(pointA, pointB, size=1,color=[1.0,1.0,1.0]):
 
 def identity():
     return np.matrix(np.identity(4))
+
+def orthonormalize(mx):
+    mat = mx[0:3,0:3]
+    (u,_,v) = np.linalg.svd(mat,False)
+    mat = u.dot(v)
+    mx[0:3,0:3] = mat
+    return mx
 

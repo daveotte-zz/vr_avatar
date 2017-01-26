@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1562</width>
+    <width>1497</width>
     <height>1056</height>
    </rect>
   </property>
@@ -250,6 +250,12 @@
         </item>
         <item>
          <widget class="QCheckBox" name="gridCheckbox">
+          <property name="maximumSize">
+           <size>
+            <width>230</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Grid</string>
           </property>
@@ -260,11 +266,46 @@
         </item>
         <item>
          <widget class="QCheckBox" name="transformsCheckbox">
+          <property name="maximumSize">
+           <size>
+            <width>230</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Draw Transforms</string>
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="maximumSize">
+           <size>
+            <width>230</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Inspector</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextBrowser" name="inspectorText">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>230</width>
+            <height>16777215</height>
+           </size>
           </property>
          </widget>
         </item>
@@ -330,7 +371,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1562</width>
+     <width>1497</width>
      <height>25</height>
     </rect>
    </property>

@@ -70,15 +70,24 @@ class NN(object):
         inputData = dataSet[:,self.engine.inputStart:self.engine.inputEnd]
         outputData = dataSet[:,self.engine.outputStart:self.engine.outputEnd]
         
+        #inputData = self.normalizeData(inputData)
         return inputData, outputData       
+
+    def normalizeData(self,inputData):
+        """
+        Subtract the mean, and divide by the standard deviation foreach
+        dimension (column).
+        """
+        for c in range(inputData.shape[1]):
+            column = inputData[:,c:c+1]
+            inputData[:,c:c+1] = np.true_divide(column-np.mean(column),np.std(column))
+        return np.nan_to_num(inputData)
 
     def model(self):
         model = Sequential()
 
         inputDim = self.engine.inputEnd
         outputDim = (self.engine.outputEnd-self.engine.outputStart)
-
-
         
         model.add(Dense(inputDim, input_dim=inputDim, init='normal', activation='relu'))
         model.add(Dense(150, init='normal', activation='relu'))
