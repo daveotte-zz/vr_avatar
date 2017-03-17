@@ -12,25 +12,6 @@ from path import Path
 from threading import Thread
 import ast
 from collections import OrderedDict
-sys.path.append('/usr/local/lib/python2.7/site-packages/ImportScene')
-sys.path.append('/usr/local/lib/python2.7/site-packages')
-
-from DisplayGlobalSettings  import *
-from DisplayHierarchy       import DisplayHierarchy
-from DisplayMarker          import DisplayMarker
-from DisplayMesh            import DisplayMesh
-from DisplayUserProperties  import DisplayUserProperties
-from DisplayPivotsAndLimits import DisplayPivotsAndLimits
-from DisplaySkeleton        import DisplaySkeleton
-from DisplayNurb            import DisplayNurb
-from DisplayPatch           import DisplayPatch
-from DisplayCamera          import DisplayCamera
-from DisplayLight           import DisplayLight
-from DisplayLodGroup        import DisplayLodGroup
-from DisplayPose            import DisplayPose
-from DisplayAnimation       import DisplayAnimation
-from DisplayGenericInfo     import DisplayGenericInfo
-
 from FbxCommon import *
 import numpy as np
 from keras.models import model_from_json
@@ -92,6 +73,8 @@ class engine(object):
             bigTransformList =  bigTransformList + self.extractedTransformsOverFrameRange(scene,\
                                                                                 scene.startTime,\
                                                                                 scene.endTime+1)
+            scene.destroy()
+        
         return bigTransformList
 
     def extractedTransformsOverFrameRange(self,scene,start,end):

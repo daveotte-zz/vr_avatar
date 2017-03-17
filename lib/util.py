@@ -212,3 +212,32 @@ def orthonormalize(mx):
     mx[0:3,0:3] = mat
     return mx
 
+
+def getMeanAndStdev(inputData):
+    """
+    Return two tuples. The first is a tuple of means, the second of standard deviations
+    for each column in the inputData matrix. This is stored for normalization during
+    fitting, and prediction.
+
+    Arguments: np.array matrix
+    Returns: dataMeanTuple, dataStdevTuple
+    """
+    dataMeanList = []
+    dataStdevList = []
+
+    for c in range(inputData.shape[1]):
+            column = inputData[:,c:c+1]
+            dataMeanList.append(np.mean(column))
+            dataStdevList.append(np.std(column))
+ 
+    return dataMeanList,dataStdevList
+
+def normalizeData(inputData,dataMeanList,dataStdevList):
+    """
+    Subtract the mean, and divide by the standard deviation foreach
+    dimension (column).
+    """
+    for c in range(inputData.shape[1]):
+        column = inputData[:,c:c+1]
+        inputData[:,c:c+1] = np.true_divide(column-dataMeanList[c],dataStdevList[c])
+    return np.nan_to_num(inputData)

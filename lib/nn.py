@@ -14,7 +14,8 @@ import os
 from path import Path
 import random
 from shutil import copyfile
-
+import lib.util as util
+import json
 
 class NN(object):
     def __init__(self,engine):
@@ -33,10 +34,15 @@ class NN(object):
         
         inputData, outputData = self.data()
         model = self.model()
-        model.fit(inputData,outputData, nb_epoch=self.engine.nnConfig.epochs, batch_size=50)
-        self.write(model)
 
-    def write(self,model):
+        dataMeanList, dataStdevList = util.getMeanAndStdev(inputData)
+        
+
+        model.fit(util.normalizeData(inputData,dataMeanList,dataStdevList),outputData,\
+                                     nb_epoch=self.engine.nnConfig.epochs, batch_size=50)
+        self.write(model,dataMeanList,dataStdevList)
+
+    def write(self,model,dataMeanList,dataStdevList):
         writeDir = self.engine.nnConfig.writeWeightsFile.dirname()
         if not writeDir.isdir():
             print "Making log dir: %s"%(writeDir)
@@ -49,6 +55,15 @@ class NN(object):
         jsonFile = open(self.engine.nnConfig.writeNnFile,'w')
         jsonFile.write(model.to_json())
         jsonFile.close()
+
+        #add mean and stdev info to json file
+        jsonFile = open(self.engine.nnConfig.writeNnFile)
+        jsonNodes = json.loads(jsonFile.read())
+        jsonNodes['dataMeanList'] = dataMeanList
+        jsonNodes['dataStdevList'] = dataStdevList
+        jsonFile.close()
+        with open(self.engine.nnConfig.writeNnFile,'w') as outfile:
+            json.dump(jsonNodes,outfile)
 
         print "Copying config: %s"%self.engine.nnConfig.configFile
         copyfile(self.engine.nnConfig.configFile, self.engine.nnConfig.writeConfigFile)
@@ -70,18 +85,8 @@ class NN(object):
         inputData = dataSet[:,self.engine.inputStart:self.engine.inputEnd]
         outputData = dataSet[:,self.engine.outputStart:self.engine.outputEnd]
         
-        #inputData = self.normalizeData(inputData)
         return inputData, outputData       
 
-    def normalizeData(self,inputData):
-        """
-        Subtract the mean, and divide by the standard deviation foreach
-        dimension (column).
-        """
-        for c in range(inputData.shape[1]):
-            column = inputData[:,c:c+1]
-            inputData[:,c:c+1] = np.true_divide(column-np.mean(column),np.std(column))
-        return np.nan_to_num(inputData)
 
     def model(self):
         model = Sequential()
@@ -89,9 +94,9 @@ class NN(object):
         inputDim = self.engine.inputEnd
         outputDim = (self.engine.outputEnd-self.engine.outputStart)
         
-        model.add(Dense(inputDim, input_dim=inputDim, init='normal', activation='relu'))
-        model.add(Dense(150, init='normal', activation='relu'))
-        model.add(Dense(outputDim, init='normal', activation='linear'))
+        model.add(Dense(inputDim, input_dim=inputDim, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(150, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(outputDim, kernel_initializer='normal', activation='linear'))
 
         optim=keras.optimizers.Adagrad(lr=0.01, epsilon=1e-08)
         #optim = keras.optimizers.SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)

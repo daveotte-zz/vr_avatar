@@ -16,22 +16,6 @@ from collections import OrderedDict
 sys.path.append('/usr/local/lib/python2.7/site-packages/ImportScene')
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
-from DisplayGlobalSettings  import *
-from DisplayHierarchy       import DisplayHierarchy
-from DisplayMarker          import DisplayMarker
-from DisplayMesh            import DisplayMesh
-from DisplayUserProperties  import DisplayUserProperties
-from DisplayPivotsAndLimits import DisplayPivotsAndLimits
-from DisplaySkeleton        import DisplaySkeleton
-from DisplayNurb            import DisplayNurb
-from DisplayPatch           import DisplayPatch
-from DisplayCamera          import DisplayCamera
-from DisplayLight           import DisplayLight
-from DisplayLodGroup        import DisplayLodGroup
-from DisplayPose            import DisplayPose
-from DisplayAnimation       import DisplayAnimation
-from DisplayGenericInfo     import DisplayGenericInfo
-
 from FbxCommon import *
 import numpy as np
 from OpenGL.GL import *
@@ -221,7 +205,7 @@ class fbxScene(scene):
             lResult                         = LoadScene(self.lSdkManager, self.lScene, self.fileName)
             self.needsInitializing          = False
             
-            lAnimStack                      = self.lScene.GetSrcObject(FbxAnimStack.ClassId, 0)
+            lAnimStack                      = self.lScene.GetSrcObject(FbxCriteria.ObjectType(FbxAnimStack.ClassId), 0)
             
             #set fps to 24, even though these fbx files are at 30.
             #I'm doing this since Blender and Maya default to 24

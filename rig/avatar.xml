@@ -3,11 +3,11 @@
     <joint name="rHandRef" 			transform="-1.0, 0.0, 0.0, 0.0,    0.0, -1.0, 0.0, 0.0,    0.0, 0.0, 1.0, 0.0,     0.0, 0.0, 0.0, 1.0" parent="world"/>
     <joint name="rControllerRef" 	transform="0.0, 0.0, -1.0, 0.0,    0.0, 1.0, 0.0, 0.0,    1.0, 0.0, 0.0, 0.0,    0.0, 0.0, 0.0, 1.0" parent="world"/>
     <joint name="rController" 		transform="0.0, 0.0, -1.0, 0.0,    0.0, 1.0, 0.0, 0.0,    1.0, 0.0, 0.0, 0.0,     0.0, 0.0, 0.0, 1.0" parent="world"/>
-    <joint name="rHand" 			transform="0.0, 0.0, -1.0, 0.0,    0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0,     0.0, 0.0, 23.0, 1.0" parent="rController"/>
+    <joint name="rHand" 			transform="0.0, 0.0, -1.0, 0.0,    0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0,     0.0, 0.0, 0.0, 1.0" parent="rController"/>
     <joint name="lHandRef" 			transform="1.0, 0.0, 0.0, 0.0,    0.0, 1.0, 0.0, 0.0,    0.0, 0.0, 1.0, 0.0,    0.0, 0.0, 0.0, 1.0" parent="world"/>
     <joint name="lControllerRef" 	transform="0.0, 0.0, 1.0, 0.0,    0.0, 1.0, 0.0, 0.0,    -1.0, 0.0, 0.0, 0.0,    0.0, 0.0, 0.0, 1.0" parent="world"/>
     <joint name="lController" 		transform="0.0, 0.0, -1.0, 0.0,    0.0, 1.0, 0.0, 0.0,    1.0, 0.0, 0.0, 0.0,    0.0, 0.0, 0.0, 1.0" parent="world"/>
-    <joint name="lHand" 			transform="0.0, 0.0, -1.0, 0.0,    0.0, 1.0, 0.0, 0.0,    1.0, 0.0, 0.0, 0.0,    0.0, 0.0, 23.0, 1.0" parent="lController"/>
+    <joint name="lHand" 			transform="0.0, 0.0, -1.0, 0.0,    0.0, 1.0, 0.0, 0.0,    1.0, 0.0, 0.0, 0.0,    0.0, 0.0, 0.0, 1.0" parent="lController"/>
 
     <joint name="headRef" 			transform="0.0, 1.0, 0.0, 0.0,    -1.0, 0.0, 0.0, 0.0,    0.0, 0.0, 1.0, 0.0,    0.0, 0.0, 0.0, 1.0" parent="world"/>
     <joint name="hmdRef" 			transform="-1.0, 0.0, 0.0, 0.0,    0.0, 1.0, 0.0, 0.0,    0.0, 0.0, -1.0, 0.0,    0.0, 0.0, 0.0, 1.0" parent="world"/>
