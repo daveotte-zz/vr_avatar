@@ -22,14 +22,20 @@ class engine(object):
     """
     Composes nn data using and an nnConfig object and list of scenes.
     """
-    def __init__(self,nnConfig,trainingScenes,testingScenes):
+    def __init__(self,nnConfig,trainingScenes=[],testingScenes=[]):
+        
+
         self.nnConfig = nnConfig
         self.name = self.nnConfig.name
         self.trainingScenes = trainingScenes
         self.testingScenes = testingScenes
         self.scenes = self.trainingScenes + self.testingScenes
 
-        self.operation = fbxOperationClass = getattr(op, self.nnConfig.fbxMethod)
+        try:
+            self.operation = fbxOperationClass = getattr(op, self.nnConfig.fbxMethod)
+        except:
+            print "operations.py has no '%s' class to process the scenes."% (self.nnConfig.fbxMethod)
+
         self.fbxOperation = fbxOperationClass()
 
         viveOperationClass = getattr(op, self.nnConfig.viveMethod)
@@ -38,7 +44,11 @@ class engine(object):
         self.loadModel()
 
         #initially just make the first scene the current scene. 
-        self.scene = self.trainingScenes[0]
+        try:
+            self.scene = self.trainingScenes[0]
+        except:
+            print sys.exc_info()[0]
+            print "There are no training scenes."
         self.frame = 0
         self.data = False
 
@@ -67,6 +77,12 @@ class engine(object):
         """
         A list of numpy mx4 lists that will
         be used per the nnConfig object.
+        The nnConfig objects list the joints we want to extract,
+        and then this 'bigTransformList' is a python list of frames.
+        Each frame is a list of numpy 4x4 matrices extracted from
+        the fbx/vive scenes. This is the raw data, and not formated
+        yet...'set Data' processes all this data into a clean numpy
+        array that the NN will like.
         """
         bigTransformList = []
         for scene in self.trainingScenes:
@@ -123,7 +139,7 @@ class engine(object):
     def drawExtracted(self,transformScale):
         print "draw extracted at frame: %d"%(self.frame)
         self.updateTransforms()
-
+        print "updated transforms------------------------------------"
         self.operation.drawExtracted(transformScale)
 
     def drawManipulated(self,transformScale):

@@ -23,6 +23,7 @@ from threading import Thread
 # Application class
 class App(object):
     def __init__(self):
+        
         jsonNodes               = json.loads(open(util.getJsonFile()).read())
         self.trainingScenes  = sceneManager(jsonNodes['trainingGroupIndices']).scenes
         self.testingScenes   = sceneManager(jsonNodes['testingGroupIndices']).scenes

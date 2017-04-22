@@ -36,10 +36,9 @@ class NN(object):
         model = self.model()
 
         dataMeanList, dataStdevList = util.getMeanAndStdev(inputData)
-        
 
-        model.fit(util.normalizeData(inputData,dataMeanList,dataStdevList),outputData,\
-                                     nb_epoch=self.engine.nnConfig.epochs, batch_size=50)
+        model.fit(util.normalizeData(inputData,dataMeanList,dataStdevList) ,outputData,\
+                                     epochs=self.engine.nnConfig.epochs, batch_size=50)
         self.write(model,dataMeanList,dataStdevList)
 
     def write(self,model,dataMeanList,dataStdevList):
@@ -86,7 +85,6 @@ class NN(object):
         outputData = dataSet[:,self.engine.outputStart:self.engine.outputEnd]
         
         return inputData, outputData       
-
 
     def model(self):
         model = Sequential()

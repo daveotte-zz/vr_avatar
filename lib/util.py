@@ -34,7 +34,10 @@ def getJsonFile():
     '''
     Return abs path to json file.
     '''
-    return os.path.dirname(__file__) + '/config.json'
+    if os.environ.has_key('JSON'):
+        return os.environ['JSON']
+    else:
+        return os.path.dirname(__file__) + '/config.json'
 
 
 def fbxMxtoList(fbxMx):
@@ -200,6 +203,19 @@ def drawLine(pointA, pointB, size=1,color=[1.0,1.0,1.0]):
     glColor3f(color[0],color[1],color[2]);
     glVertex3fv([pointA[0],pointA[1],pointA[2]])
     glVertex3fv([pointB[0],pointB[1],pointB[2]])
+    glEnd()
+
+def drawLines(points, size=1,color=[1.0,1.0,1.0]):
+    """
+    Draw an array of points (v3)
+    """
+    glLineWidth(size)
+    glBegin(GL_LINE_STRIP)
+    glColor3f(color[0],color[1],color[2]);
+
+    for pointA in points:    
+        glVertex3fv([pointA[0],pointA[1],pointA[2]])
+        
     glEnd()
 
 def identity():

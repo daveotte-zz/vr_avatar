@@ -3,3 +3,19 @@
 ################################################################################
 
 /vr_avatar.pyproj
+
+fbx2csv.py
+lib/__init__.pyc
+lib/data.pyc
+lib/engine.pyc
+lib/experiment.json
+lib/nn.pyc
+lib/operations.pyc
+lib/scene.pyc
+lib/util.pyc
+rig/__init__.pyc
+rig/joints.pyc
+ui/MyGeom.pyc
+ui/__init__.pyc
+ui/camera.pyc
+ui/gui.pyc

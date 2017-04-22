@@ -112,7 +112,7 @@ class sceneGroup(baseData):
         files = []
         if hasattr(self, 'dir'):
             for f in os.listdir(self.dir):
-                #could be an fbx scene, or my made up format 9vive telemetry).
+                #could be an fbx scene, or my made up format of vive telemetry).
                 if f.endswith('.fbx') or f.endswith('.csv'):
                     files.append(self.dir+'/'+f)
         return files
