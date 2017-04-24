@@ -30,16 +30,15 @@ class engine(object):
         self.trainingScenes = trainingScenes
         self.testingScenes = testingScenes
         self.scenes = self.trainingScenes + self.testingScenes
-
         try:
             self.operation = fbxOperationClass = getattr(op, self.nnConfig.fbxMethod)
         except:
             print "operations.py has no '%s' class to process the scenes."% (self.nnConfig.fbxMethod)
 
-        self.fbxOperation = fbxOperationClass()
+        self.operation = fbxOperationClass()
 
-        viveOperationClass = getattr(op, self.nnConfig.viveMethod)
-        self.viveOperation = viveOperationClass()
+        #viveOperationClass = getattr(op, self.nnConfig.viveMethod)
+        #self.viveOperation = viveOperationClass()
         
         self.loadModel()
 
@@ -59,7 +58,7 @@ class engine(object):
     def setData(self):
         self.data = []
         for transforms in self.extractedTransforms():
-            inputLinePortion, outputLinePortion = self.fbxOperation.operate(transforms)
+            inputLinePortion, outputLinePortion = self.operation.operate(transforms)
             line = inputLinePortion + outputLinePortion
             self.data.append(line)
         self.inputStart = 0
@@ -69,8 +68,8 @@ class engine(object):
         
 
     def loadModel(self):
-        self.fbxOperation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
-        self.viveOperation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
+        self.operation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
+        #self.viveOperation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
 
 
     def extractedTransforms(self):
@@ -119,13 +118,10 @@ class engine(object):
         return transformsAtFrame
 
     def updateTransforms(self):
-        if self.scene.type == "fbx":
-            self.operation = self.fbxOperation
-            print "Set to fbx operation."
-        else:
-            self.operation = self.viveOperation
-            print "Set to vive operation"
+            
         transforms = self.extractedTransformsAtFrame()
+        if self.scene.type == "vive":
+            transforms = self.operation.vive2fbx(transforms)
         self.operation.operate(transforms)
 
     def drawSkeleton(self,transformScale,drawTransforms=True):
@@ -134,12 +130,11 @@ class engine(object):
     def drawSkeletonRecomposed(self,transformScale,drawTransforms=True):
         print "draw recomposed skeleton at frame: %d"%(self.frame)
         self.updateTransforms()
-        self.scene.drawSkeleton(self.frame,transformScale,drawTransforms,self.fbxOperation.skipJoints)
+        self.scene.drawSkeleton(self.frame,transformScale,drawTransforms,self.operation.skipJoints)
 
     def drawExtracted(self,transformScale):
         print "draw extracted at frame: %d"%(self.frame)
         self.updateTransforms()
-        print "updated transforms------------------------------------"
         self.operation.drawExtracted(transformScale)
 
     def drawManipulated(self,transformScale):

@@ -40,6 +40,8 @@ class operation(object):
         self.lineSize = 2
         self.lineColor = [1.0,1.0,1.0]
 
+        self.scaleOffset = 1.0
+
     def setModelFiles(self,modelJsonFile,modelWeightsFile):
         self.modelJsonFile = modelJsonFile
         self.modelWeightsFile = modelWeightsFile               
@@ -60,6 +62,78 @@ class operation(object):
         else:
             model =  False
         self.model = model
+
+    def vive2fbx(self,transformList):
+        hmdMx4 = transformList[0]
+        rControllerMx4 = transformList[1]
+        lControllerMx4 = transformList[2]
+
+        self.joints = joints('/home/daveotte/work/vr_avatar/rig/avatar.xml')
+
+        #apply head local offset
+
+        #get xml hmd joint, who's parent is the world
+        hmdJoint = self.joints.getJoint('hmd')
+
+        #place the xml hmd joint per vive telemetry
+        hmdJoint.npMx = hmdMx4
+
+        #get the headMx4, which is the local offset from hmdJoint.
+        #now headMx4 is like an fbx headMx4
+        headMx4 = self.joints.getJoint('head').GetNodeGlobalTransform()
+
+        #get head position v3
+        headPosV3 = util.getPosArray(headMx4)
+        #send head to origin (leave behind the pos information...)
+        headMx4 = util.extractRot(headMx4)
+
+        #RIGHT
+        #apply rHand local offset
+        rControllerJoint = self.joints.getJoint('rController')
+        rControllerJoint.npMx = rControllerMx4
+        rHandMx4 = self.joints.getJoint('rHand').GetNodeGlobalTransform()
+
+        #send rHand to the origin with head offset
+        rHandPosV3 = util.getPosArray(rHandMx4)
+        rHandPosV3 = rHandPosV3 - headPosV3
+        rHandPosV3 = rHandPosV3 * self.scaleOffset
+        rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
+        
+        #LEFT
+        #apply lHand local offset
+        lControllerJoint = self.joints.getJoint('lController')
+        lControllerJoint.npMx = lControllerMx4
+        lHandMx4 = self.joints.getJoint('lHand').GetNodeGlobalTransform()       
+
+        #send lHand to the origin with head offset (and scale...I'm bigger.)
+        lHandPosV3 = util.getPosArray(lHandMx4)
+        lHandPosV3 = lHandPosV3 - headPosV3
+        lHandPosV3 = lHandPosV3 * self.scaleOffset
+        lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
+
+        #we brought everything to the origin for easy scaling,
+        #so now let's put it back:
+
+        #put head back:
+        headMx4 = util.setPos(headMx4,headPosV3)
+
+        #put rHand back:
+        rHandPosV3 = util.getPosArray(rHandMx4) + headPosV3
+        rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
+
+        #put lHand back:
+        lHandPosV3 = util.getPosArray(lHandMx4) + headPosV3
+        lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
+
+        #pack it up and return it.
+        transformList[0] = headMx4
+        transformList[1] = rHandMx4
+        transformList[2] = lHandMx4
+
+        return transformList
+
+
+
 
     def runPrediction(self):
         #that [0] needs to happen, but may not work that way.
@@ -564,6 +638,8 @@ class predictNPosRot(operation):
         self.skipJoints = ['rForeArm','rHand']
         self.timeBuffer = 6
     
+        self.scaleOffset = 0.5
+
     def operate(self,transformList):
         """
                                 ["head", "world"],
@@ -573,9 +649,6 @@ class predictNPosRot(operation):
                                 .... 
         """
         #The number of frames stored to deliver as training input
-        print "made it 1"
-        
-        print "made it 2"
         self.extractedTransforms = copy.deepcopy(transformList)
 
         headMx4 = transformList.pop(0)
