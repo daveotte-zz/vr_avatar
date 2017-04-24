@@ -638,7 +638,7 @@ class predictNPosRot(operation):
         self.skipJoints = ['rForeArm','rHand']
         self.timeBuffer = 6
     
-        self.scaleOffset = 0.65
+        self.scaleOffset = 0.75
 
         self.curPrevHeadList = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
 

@@ -93,7 +93,7 @@ class NN(object):
         outputDim = (self.engine.outputEnd-self.engine.outputStart)
         
         model.add(Dense(inputDim, input_dim=inputDim, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(150, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(300, kernel_initializer='normal', activation='relu'))
         model.add(Dense(outputDim, kernel_initializer='normal', activation='linear'))
 
         optim=keras.optimizers.Adagrad(lr=0.01, epsilon=1e-08)
