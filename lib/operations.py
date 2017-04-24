@@ -638,7 +638,9 @@ class predictNPosRot(operation):
         self.skipJoints = ['rForeArm','rHand']
         self.timeBuffer = 6
     
-        self.scaleOffset = 0.5
+        self.scaleOffset = 0.65
+
+        self.curPrevHeadList = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
 
     def operate(self,transformList):
         """
@@ -679,6 +681,9 @@ class predictNPosRot(operation):
             V3 = V3 - headPosV3
             transformList[i] = util.setPos(transformList[i], V3)
 
+        self.curPrevHeadList.pop(0)
+        self.curPrevHeadList.append(headPosV3)
+        velocity = self.curPrevHeadList[1]-self.curPrevHeadList[0]
 
         #length of array divided by one frame's worth of dimensions
         # 12 + 9 + 1 + 12 = 34 per frame 
@@ -686,14 +691,9 @@ class predictNPosRot(operation):
         self.currentInputArray = util.getTransformArray(rHandMx4,True).tolist() \
                         + util.getRotArray(headMx4).tolist() \
                         + [headPosV3[1]]\
+                        + velocity.tolist()\
                         + util.getTransformArray(lHandMx4,True).tolist()
-        '''
-        print "Made it."
-        #prime the pump... make sure there at least timeBuffer count of numbers
-        print str(len(self.inputArray))
-        print str(len(self.currentInputArray))
-        print str( len(self.inputArray)/len(self.currentInputArray)   )
-        '''
+
         while len(self.inputArray)/len(self.currentInputArray) < self.timeBuffer:
             print "there's not enough in the buffer."
             self.inputArray = self.inputArray + self.currentInputArray
@@ -715,6 +715,8 @@ class predictNPosRot(operation):
         self.manipulatedPositions = []
         for transform in transformList:
             self.manipulatedPositions.append(util.getPosArray(transform))
+
+        self.manipulatedPositions.append(velocity.tolist())
 
         # stuff for recompose
         self.headPosV3 = headPosV3
