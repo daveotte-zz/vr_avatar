@@ -331,7 +331,7 @@ class Viewer3DWidget(QGLWidget):
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
         if self.showGrid:
@@ -358,6 +358,7 @@ class Viewer3DWidget(QGLWidget):
         glFlush()
 
     def resizeGL(self, widthInPixels, heightInPixels):
+        print "Resize being called."
         self.camera.setViewportDimensions(widthInPixels, heightInPixels)
         glViewport(0, 0, widthInPixels, heightInPixels)
 

@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from lib.nn import NN
+import lib.nn as nn
 from ui.gui import UI
 import sys
 import sys
@@ -36,7 +36,8 @@ class App(object):
         self.engine = self.engines[0]
         
     def run(self):
-        self.nn = NN(self.engine)
+        nnClass = getattr(nn, self.engine.nnConfig.nn)
+        self.nn = nnClass(self.engine)
         #nn.run()
         self.nn.job = Process(target=runNN, args=(self.nn,))
         self.nn.job.start()
@@ -68,7 +69,8 @@ if __name__ == "__main__":
     if sys.argv[1] == "-noGui":
         #train all nn's
         for engine in app.engines:
-            nn= NN(engine)
+            nnClass = getattr(nn,engine.nnConfig.nn)
+            nn= nnClass(engine)
             nn.job = Process(target=runNN, args=(nn,))
             nn.job.start()
     else:

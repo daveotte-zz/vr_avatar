@@ -257,3 +257,21 @@ def normalizeData(inputData,dataMeanList,dataStdevList):
         column = inputData[:,c:c+1]
         inputData[:,c:c+1] = np.true_divide(column-dataMeanList[c],dataStdevList[c])
     return np.nan_to_num(inputData)
+
+
+def flipMx(mx,axis=0):
+    mxList = mx.tolist()
+    print "efore " + str(mxList[3][0])
+    mxList[0][0] = mxList[0][0] * -1
+    mxList[1][0] = mxList[1][0] * -1
+    mxList[2][0] = mxList[2][0] * -1
+    mxList[3][0] = mxList[3][0] * -1
+
+    #flip the y axis
+    mxList[1][0] = mxList[1][0]*-1
+    mxList[1][1] = mxList[1][1]*-1
+    mxList[1][2] = mxList[1][2]*-1
+
+
+
+    return np.array(mxList)

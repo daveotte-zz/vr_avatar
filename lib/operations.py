@@ -63,6 +63,17 @@ class operation(object):
             model =  False
         self.model = model
 
+    def clearCache(self):
+        """
+        An instance of this class 'operation' will store self.frames worth
+        of input data. When processing of extracted transforms 
+        switches to a new scene (animation clip), we need to start over to avoid
+        discontinuity over the stored frames. This method gets called
+        when operation is used to extract transform on a new scene.
+        """
+        self.inputArray = []
+        print "Cache cleared."
+
     def vive2fbx(self,transformList):
         hmdMx4 = transformList[0]
         rControllerMx4 = transformList[1]
@@ -115,14 +126,16 @@ class operation(object):
         #so now let's put it back:
 
         #put head back:
-        headMx4 = util.setPos(headMx4,headPosV3)
+        headPosV3scaled = headPosV3
+        headPosV3scaled[1] = self.scaleHeightOffset * headPosV3[1]
+        headMx4 = util.setPos(headMx4,headPosV3scaled)
 
         #put rHand back:
-        rHandPosV3 = util.getPosArray(rHandMx4) + headPosV3
+        rHandPosV3 = util.getPosArray(rHandMx4) + headPosV3scaled
         rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
 
         #put lHand back:
-        lHandPosV3 = util.getPosArray(lHandMx4) + headPosV3
+        lHandPosV3 = util.getPosArray(lHandMx4) + headPosV3scaled
         lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
 
         #pack it up and return it.
@@ -639,8 +652,12 @@ class predictNPosRot(operation):
         self.timeBuffer = 6
     
         self.scaleOffset = 0.75
+        self.scaleHeightOffset = 0.85
 
         self.curPrevHeadList = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
+
+
+        self.positionOnly = False
 
     def operate(self,transformList):
         """
@@ -652,6 +669,10 @@ class predictNPosRot(operation):
         """
         #The number of frames stored to deliver as training input
         self.extractedTransforms = copy.deepcopy(transformList)
+
+        for i in range(len(self.extractedTransforms)):
+            self.extractedTransforms[i] = util.flipMx(self.extractedTransforms[i])
+
 
         headMx4 = transformList.pop(0)
         rHandMx4 = transformList.pop(0)
@@ -687,12 +708,22 @@ class predictNPosRot(operation):
 
         #length of array divided by one frame's worth of dimensions
         # 12 + 9 + 1 + 12 = 34 per frame 
-        self.currentInputArray = []
-        self.currentInputArray = util.getTransformArray(rHandMx4,True).tolist() \
-                        + util.getRotArray(headMx4).tolist() \
-                        + [headPosV3[1]]\
-                        + velocity.tolist()\
-                        + util.getTransformArray(lHandMx4,True).tolist()
+
+
+        if self.positionOnly:
+            self.currentInputArray = []
+            self.currentInputArray = util.getTransformArray(rHandMx4,True).tolist() \
+                            + util.getRotArray(headMx4).tolist() \
+                            + [headPosV3[1]]\
+                            + velocity.tolist()\
+                            + util.getTransformArray(lHandMx4,True).tolist()
+        else:
+            self.currentInputArray = []
+            self.currentInputArray = util.getTransformArray(rHandMx4,True).tolist() \
+                            + util.getRotArray(headMx4).tolist() \
+                            + [headPosV3[1]]\
+                            + velocity.tolist()\
+                            + util.getTransformArray(lHandMx4,True).tolist()            
 
         while len(self.inputArray)/len(self.currentInputArray) < self.timeBuffer:
             print "there's not enough in the buffer."
@@ -707,11 +738,18 @@ class predictNPosRot(operation):
         #and the things we are trying to predict
         self.outputArray = []
 
-        for transform in transformList:
-            self.outputArray = self.outputArray + util.getPosArray(transform).tolist() + util.getRotArray(transform).tolist()
+        if self.positionOnly:
+            for transform in transformList:
+                self.outputArray = self.outputArray + util.getPosArray(transform).tolist() 
+        else:
+            for transform in transformList:
+                self.outputArray = self.outputArray + util.getPosArray(transform).tolist() + util.getRotArray(transform).tolist()
 
         #for draw
-        self.manipulatedTransforms = [rHandMx4,headMx4,lHandMx4] + transformList
+
+        if not self.positionOnly:
+            self.manipulatedTransforms = [rHandMx4,headMx4,lHandMx4] + transformList
+
         self.manipulatedPositions = []
         for transform in transformList:
             self.manipulatedPositions.append(util.getPosArray(transform))
@@ -730,30 +768,48 @@ class predictNPosRot(operation):
         Format results of prediction into positions and transforms.
         These will be drawn.
         '''
-        posStart = 0
-        posEnd = 3
-        rotEnd = 12
-        offset = 12
-        self.predictedTransforms = []
-        self.predictedPositions = []
-        for i in range(self.transformCount):
-            print "this is my index: %d"%(i)
-            ###
-            ### turn the huge output array into prediction transforms
 
-            #pull out position from predicted output array
-            self.predictedPositions.append(predictedOutput[posStart:posEnd])
+        if self.positionOnly:
+            posStart = 0
+            posEnd = 3
+            offset = 3
+            self.predictedTransforms = []
+            self.predictedPositions = []
+            for i in range(self.transformCount):
+                ###
+                ### turn the huge output array into prediction transforms
 
-            #manufacture a transform with the position
-            transform = util.setPos(util.identity(),predictedOutput[posStart:posEnd])
+                #pull out position from predicted output array
+                self.predictedPositions.append(predictedOutput[posStart:posEnd])
 
-            #pull out the rotation array, and complete the transform construction
-            transform = util.setRot(transform,predictedOutput[posEnd:rotEnd])
-            transform = util.orthonormalize(transform)
-            self.predictedTransforms.append(transform)
-            posStart += offset
-            posEnd += offset
-            rotEnd += offset
+                posStart += offset
+                posEnd += offset
+        else:
+
+            posStart = 0
+            posEnd = 3
+            rotEnd = 12
+            offset = 12
+            self.predictedTransforms = []
+            self.predictedPositions = []
+            for i in range(self.transformCount):
+                print "this is my index: %d"%(i)
+                ###
+                ### turn the huge output array into prediction transforms
+
+                #pull out position from predicted output array
+                self.predictedPositions.append(predictedOutput[posStart:posEnd])
+
+                #manufacture a transform with the position
+                transform = util.setPos(util.identity(),predictedOutput[posStart:posEnd])
+
+                #pull out the rotation array, and complete the transform construction
+                transform = util.setRot(transform,predictedOutput[posEnd:rotEnd])
+                transform = util.orthonormalize(transform)
+                self.predictedTransforms.append(transform)
+                posStart += offset
+                posEnd += offset
+                rotEnd += offset
 
     def updateRecompose(self):
         '''Recompose self.predictedPositions and self.predictedTransforms.'''
@@ -764,9 +820,11 @@ class predictNPosRot(operation):
         #recomposed the manipulated xforms (not predicted) This is for vive, since we have offset to add.
 
         self.recomposedTransforms = []
-        transforms = copy.copy(self.manipulatedTransforms)
-        for transform in transforms[0:3]:
-            self.recomposedTransforms.append(util.addPosToMx4(transform,self.headPosV3))
+
+        if not self.positionOnly:
+            transforms = copy.copy(self.manipulatedTransforms)
+            for transform in transforms[0:3]:
+                self.recomposedTransforms.append(util.addPosToMx4(transform,self.headPosV3))
 
 
         #now lets recompose the predicted positions and transforms. (mark predictd with magenta dot)
@@ -777,13 +835,14 @@ class predictNPosRot(operation):
             #recompose the position
             self.recomposedPositions.append(self.headPosV3+position)
         
-        
-        for i in range(len(self.predictedTransforms)):
-            #get the predicted transform
-            recomposedTransform = copy.copy(self.predictedTransforms[i])
-            
-            #keep the rotation, but offset with recomposed position
-            self.recomposedTransforms.append(util.setPos(recomposedTransform,self.recomposedPositions[i])) 
+ 
+        if not self.positionOnly:       
+            for i in range(len(self.predictedTransforms)):
+                #get the predicted transform
+                recomposedTransform = copy.copy(self.predictedTransforms[i])
+                
+                #keep the rotation, but offset with recomposed position
+                self.recomposedTransforms.append(util.setPos(recomposedTransform,self.recomposedPositions[i])) 
 
 
 
@@ -791,7 +850,10 @@ class predictNPosRot(operation):
     def drawRecomposed(self,transformScale):
         self.runPrediction()
         self.updateRecompose()
-        util.drawMxs(self.recomposedTransforms,transformScale)
+
+
+        if not self.positionOnly:
+            util.drawMxs(self.recomposedTransforms,transformScale)
         util.drawPoints(self.recomposedPositions,9,util.color.magenta)
 
         '''
@@ -809,7 +871,73 @@ class predictNPosRot(operation):
         3 ["hip", "world"],  
         4 ["neck", "world"],       
 
+
+        1   ["head", "world"],
+        0   ["rHand", "world"],    
+        2   ["lHand", "world"],    
+        3   ["hip", "world"],  
+        4   ["abdomen", "world"],         
+        5   ["neck", "world"],       
+        6   ["rShldr", "world"],    
+        7   ["rForeArm", "world"],     
+        8   ["lShldr", "world"],    
+        9   ["lForeArm", "world"],    
+        10  ["rFoot", "world"],    
+        11  ["lFoot", "world"],    
+        12  ["rShin", "world"],    
+        13  ["lShin", "world"],    
+        14  ["rThigh", "world"],    
+        15  ["lThigh", "world"] 
+----------------------------------------
+
+        0   ["rHand", "world"],    
+        7   ["rForeArm", "world"],     
+        6   ["rShldr", "world"],    
+        5   ["neck", "world"],       
+        8   ["lShldr", "world"],    
+        9   ["lForeArm", "world"],    
+        2   ["lHand", "world"],    
+
+        1   ["head", "world"],
+        5   ["neck", "world"],       
+        4   ["abdomen", "world"],         
+        3   ["hip", "world"],  
+
+        10  ["rFoot", "world"],    
+        12  ["rShin", "world"],    
+        14  ["rThigh", "world"],    
+        3   ["hip", "world"],  
+        15  ["lThigh", "world"] 
+        13  ["lShin", "world"],    
+        11  ["lFoot", "world"],    
+
         '''  
+        util.drawLines([util.getPosArray(self.recomposedTransforms[0]), \
+                        util.getPosArray(self.recomposedTransforms[7]), \
+                        util.getPosArray(self.recomposedTransforms[6]), \
+                        util.getPosArray(self.recomposedTransforms[5]), \
+                        util.getPosArray(self.recomposedTransforms[8]), \
+                        util.getPosArray(self.recomposedTransforms[9]), \
+                        util.getPosArray(self.recomposedTransforms[2])], \
+                        self.lineSize,self.lineColor)
+
+        util.drawLines([util.getPosArray(self.recomposedTransforms[1]), \
+                        util.getPosArray(self.recomposedTransforms[5]), \
+                        util.getPosArray(self.recomposedTransforms[4]), \
+                        util.getPosArray(self.recomposedTransforms[3])], \
+                        self.lineSize,self.lineColor)
+
+        util.drawLines([util.getPosArray(self.recomposedTransforms[10]), \
+                        util.getPosArray(self.recomposedTransforms[12]), \
+                        util.getPosArray(self.recomposedTransforms[14]), \
+                        util.getPosArray(self.recomposedTransforms[3]), \
+                        util.getPosArray(self.recomposedTransforms[15]), \
+                        util.getPosArray(self.recomposedTransforms[13]), \
+                        util.getPosArray(self.recomposedTransforms[11])], \
+                        self.lineSize,self.lineColor)
+
+
+'''
 
         util.drawLines([util.getPosArray(self.recomposedTransforms[0]), \
                         util.getPosArray(self.recomposedTransforms[6]), \
@@ -817,7 +945,6 @@ class predictNPosRot(operation):
                         util.getPosArray(self.recomposedTransforms[4]), \
                         util.getPosArray(self.recomposedTransforms[1])], \
                         self.lineSize,self.lineColor)
-
         util.drawLines([util.getPosArray(self.recomposedTransforms[4]), \
                         util.getPosArray(self.recomposedTransforms[7]), \
                         util.getPosArray(self.recomposedTransforms[8]), \
@@ -829,7 +956,7 @@ class predictNPosRot(operation):
                         util.getPosArray(self.recomposedTransforms[4])], \
                         self.lineSize,self.lineColor)
 
-
+'''
 
 
 

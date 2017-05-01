@@ -85,8 +85,13 @@ class engine(object):
         """
         bigTransformList = []
         for scene in self.trainingScenes:
+            #new scene, so clear frame cache
+            self.operation.clearCache()
+
+            #add 1 to start time to avoid initial t-pose. I'm not sure why I'm adding
+            #1 to endTime. I'm sure it's for a great reason.
             bigTransformList =  bigTransformList + self.extractedTransformsOverFrameRange(scene,\
-                                                                                scene.startTime,\
+                                                                                scene.startTime+1,\
                                                                                 scene.endTime+1)
             scene.destroy()
         
