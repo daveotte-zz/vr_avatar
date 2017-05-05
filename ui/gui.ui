@@ -118,13 +118,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="skeletonRecomposedCheckbox">
-          <property name="text">
-           <string>Skeleton Recomposed</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
       <item row="2" column="1">

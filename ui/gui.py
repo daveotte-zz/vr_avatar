@@ -42,8 +42,8 @@ class UI(QtGui.QMainWindow):
         self.graphicsObj.showTransforms = self.transformsCheckbox.isChecked()
         self.transformsCheckbox.stateChanged.connect(self.setShowTransforms)
 
-        self.graphicsObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
-        self.skeletonRecomposedCheckbox.stateChanged.connect(self.setShowSkeletonRecomposed)
+        #self.graphicsObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
+        #self.skeletonRecomposedCheckbox.stateChanged.connect(self.setShowSkeletonRecomposed)
 
         self.graphicsObj.showExtracted = self.extractedCheckbox.isChecked()
         self.extractedCheckbox.stateChanged.connect(self.setshowExtracted)
@@ -289,9 +289,9 @@ class UI(QtGui.QMainWindow):
         self.graphicsObj.showSkeleton = self.skeletonCheckbox.isChecked()
         self.graphicsObj.updateGL()
 
-    def setShowSkeletonRecomposed(self):
-        self.graphicsObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
-        self.graphicsObj.updateGL()
+    #def setShowSkeletonRecomposed(self):
+    #    self.graphicsObj.showSkeletonRecomposed = self.skeletonRecomposedCheckbox.isChecked()
+    #    self.graphicsObj.updateGL()
 
     def setShowTransforms(self):
         self.graphicsObj.showTransforms = self.transformsCheckbox.isChecked()
@@ -394,8 +394,8 @@ class Viewer3DWidget(QGLWidget):
         if self.showRecompose:
             self.app.engine.drawRecomposed(self.transformScale)
  
-        if self.showSkeletonRecomposed:
-            self.app.engine.drawSkeletonRecomposed(self.transformScale,self.showTransforms)
+        #if self.showSkeletonRecomposed:
+        #    self.app.engine.drawSkeletonRecomposed(self.transformScale,self.showTransforms)
     
         glFlush()
 

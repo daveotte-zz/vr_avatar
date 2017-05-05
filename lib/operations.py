@@ -27,7 +27,7 @@ class operation(object):
         self.predictedPositions  = []
 
         self.recomposedTransforms = []
-        self.recomposedPositions  = []
+        self.recomposedTransforms  = []
 
         self.skipJoints = []
 
@@ -214,471 +214,6 @@ class operation(object):
         print "avgPosediff: " + str(self.avgPosediff)
 
 
-class predictElbowPosRot(operation):
-    def __init__(self):
-        super(predictElbowPosRot, self).__init__()
-        #joints not to draw in recompose skeleton
-        self.skipJoints = ['rForeArm','rHand']
-    
-    def operate(self,transformList):
-        """
-                                ["head", "world"],
-                                ["rHand", "world"],    
-                                ["lHand", "world"],    
-                                ["rForeArm", "world"],    
-        """
-        self.extractedTransforms = copy.deepcopy(transformList)
-
-        headMx4 = transformList[0]
-        rHandMx4 = transformList[1]
-        lHandMx4 = transformList[2]
-        rForeArmMx4 = transformList[3]
-
-        #get head position v3
-        headPosV3 = util.getPosArray(headMx4)
-
-        #send head to origin
-        headMx4 = util.extractRot(headMx4)
-
-        #send rHand to the origin with head offset
-        rHandPosV3 = util.getPosArray(rHandMx4)
-        rHandPosV3 = rHandPosV3 - headPosV3
-        rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
-        
-        #send lHand to the origin with head offset
-        lHandPosV3 = util.getPosArray(lHandMx4)
-        lHandPosV3 = lHandPosV3 - headPosV3
-        lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
-
-        #send rForeArm to the origin with head offset
-        rForeArmPosV3 = util.getPosArray(rForeArmMx4)
-        rForeArmPosV3 = rForeArmPosV3 - headPosV3
-        rForeArmMx4 = util.setPos(rForeArmMx4, rForeArmPosV3)
-
-        self.inputArray  = util.getTransformArray(rHandMx4).tolist() \
-                    + util.getRotArray(headMx4).tolist() \
-                    + [headPosV3[1]]\
-                    + util.getTransformArray(lHandMx4).tolist()
-
-        self.outputArray = util.getPosArray(rForeArmMx4).tolist() + util.getRotArray(rForeArmMx4).tolist()
-
-        #for draw
-        self.manipulatedTransforms = [rHandMx4,headMx4,lHandMx4,rForeArmMx4]
-        self.manipulatedPositions = [util.getPosArray(rForeArmMx4)]
-
-        # stuff for recompose
-        self.headPosV3 = headPosV3
-        self.rForeArmPosV3 = rForeArmPosV3
-
-        #return as python lists...apparently.
-        return self.inputArray, self.outputArray
-
-    def updatePredicted(self,predictedOutput):
-        ''' 
-        Format results of prediction into positions and transforms.
-        These will be drawn.
-        '''
-        self.predictedPositions = [predictedOutput[0:3]]
-        elbowTransform = util.setPos(util.identity(),predictedOutput[0:3])
-
-        elbowTransform = util.setRot(elbowTransform,predictedOutput[3:12])
-        elbowTransform = util.orthonormalize(elbowTransform)
-        self.predictedTransforms = [elbowTransform]
-
-    def updateRecompose(self):
-        '''Recompose self.predictedPositions and self.predictedTransforms.'''
-        self.recomposeElbowPos = copy.copy(self.predictedPositions[0])
-        self.recomposedPositions = [self.headPosV3+self.recomposeElbowPos]
-        recomposedElbowTransform = copy.copy(self.predictedTransforms[0])
-        recomposedElbowTransform = util.setPos(recomposedElbowTransform,self.recomposedPositions[0])
-        self.recomposedTransforms = [recomposedElbowTransform]
-
-        transforms = copy.copy(self.manipulatedTransforms)
-        for transform in transforms[0:3]:
-            self.recomposedTransforms.append(util.addPosToMx4(transform,self.headPosV3))
-        #self.recomposedTransforms = self.recomposedTransforms + transforms[0:3] # leave off forearm
-
-
-class predictElbowPosRotVive(operation):
-    def __init__(self):
-        super(predictElbowPosRotVive, self).__init__()
-        #joints not to draw in recompose skeleton
-        self.skipJoints = ['rForeArm','rHand']
-        self.scaleOffset = .85
-
-    def operate(self,transformList):
-        """
-                                ["head", "world"],
-                                ["rHand", "world"],    
-                                ["lHand", "world"],    
-                                ["rForeArm", "world"],    
-        """
-        self.extractedTransforms = copy.deepcopy(transformList)
-
-
-        hmdMx4 = transformList[0]
-        rControllerMx4 = transformList[1]
-        lControllerMx4 = transformList[2]
-        rForeArmMx4 = transformList[3]
-
-        self.joints = joints('/home/daveotte/work/vr_avatar/rig/avatar.xml')
-
-        #apply rHand local offset
-        hmdJoint = self.joints.getJoint('hmd')
-        hmdJoint.npMx = hmdMx4
-        headMx4 = self.joints.getJoint('head').GetNodeGlobalTransform()
-
-        #get head position v3
-        self.headPosV3 = util.getPosArray(headMx4)
-        #send head to origin
-        headMx4 = util.extractRot(headMx4)
-
-        #RIGHT
-        #apply rHand local offset
-        rControllerJoint = self.joints.getJoint('rController')
-        rControllerJoint.npMx = rControllerMx4
-        rHandMx4 = self.joints.getJoint('rHand').GetNodeGlobalTransform()
-
-        #send rHand to the origin with head offset
-        rHandPosV3 = util.getPosArray(rHandMx4)
-        rHandPosV3 = rHandPosV3 - self.headPosV3
-        rHandPosV3 = rHandPosV3 * self.scaleOffset
-        rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
-        
-        #LEFT
-        #apply lHand local offset
-        lControllerJoint = self.joints.getJoint('lController')
-        lControllerJoint.npMx = lControllerMx4
-        lHandMx4 = self.joints.getJoint('lHand').GetNodeGlobalTransform()
-
-        #send lHand to the origin with head offset
-        lHandPosV3 = util.getPosArray(lHandMx4)
-        lHandPosV3 = lHandPosV3 - self.headPosV3
-        lHandPosV3 = lHandPosV3 * self.scaleOffset
-        lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
-
-        self.inputArray = util.getTransformArray(rHandMx4).tolist() \
-                        + util.getRotArray(headMx4).tolist() \
-                        + [self.headPosV3[1]]\
-                        + util.getTransformArray(lHandMx4).tolist()
-        self.outputArray = util.getPosArray(rForeArmMx4).tolist() + util.getRotArray(rForeArmMx4).tolist()
-
-        #normalize
-        #self.inputArray = util.normalizeData(self.inputArray)
-
-        #for draw
-        self.manipulatedTransforms = [rHandMx4,headMx4,lHandMx4,rForeArmMx4]
-        self.manipulatedPositions = [util.getPosArray(rForeArmMx4)]
-
-
-        self.rForeArmPosV3  = util.getPosArray(rForeArmMx4)
-
-        #return as python lists...apparently.
-        return self.inputArray, self.outputArray
-
-    def updatePredicted(self,predictedOutput):
-        ''' 
-        Format results of prediction into positions and transforms.
-        These will be drawn.
-        '''
-        self.predictedPositions = [predictedOutput[0:3]]
-        elbowTransform = util.setPos(util.identity(),predictedOutput[0:3])
-
-        elbowTransform = util.setRot(elbowTransform,predictedOutput[3:12])
-        elbowTransform = util.orthonormalize(elbowTransform)
-        self.predictedTransforms = [elbowTransform]
-
-    def updateRecompose(self):
-        '''Recompose self.predictedPositions and self.predictedTransforms.'''
-        self.recomposeElbowPos = copy.copy(self.predictedPositions[0])
-        #unscale
-        #self.recomposeElbowPos = self.recomposeElbowPos*(1/self.scaleOffset)
-        self.recomposeElbowPos = self.recomposeElbowPos*1
-        self.recomposedPositions = [self.headPosV3+self.recomposeElbowPos]
-        recomposedElbowTransform = copy.copy(self.predictedTransforms[0])
-        recomposedElbowTransform = util.setPos(recomposedElbowTransform,self.recomposedPositions[0])
-        self.recomposedTransforms = [recomposedElbowTransform]
-
-        transforms = copy.copy(self.manipulatedTransforms)
-        for transform in transforms[0:3]:
-            pos = util.getPosArray(transform)
-            pos = pos * (1/self.scaleOffset)
-            util.setPos(transform,pos)
-            self.recomposedTransforms.append(util.addPosToMx4(transform,self.headPosV3))
-        #self.recomposedTransforms = self.recomposedTransforms + transforms[0:3] # leave off forearm
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class predictElbowPos(operation):
-    def __init__(self):
-        super(predictElbowPos, self).__init__()
-        self.skipJoints = ['rForeArm','rHand']
-    
-    def operate(self,transformList):
-        """
-                                ["head", "world"],
-                                ["rHand", "world"],    
-                                ["lHand", "world"],    
-                                ["rForeArm", "world"],    
-        """
-        self.extractedTransforms = copy.deepcopy(transformList)
-
-        headMx4 = transformList[0]
-        rHandMx4 = transformList[1]
-        lHandMx4 = transformList[2]
-        rForeArmMx4 = transformList[3]
-
-        #get head position v3
-        headPosV3 = util.getPosArray(headMx4)
-
-        #send head to origin
-        headMx4 = util.extractRot(headMx4)
-
-        #send rHand to the origin with head offset
-        rHandPosV3 = util.getPosArray(rHandMx4)
-        rHandPosV3 = rHandPosV3 - headPosV3
-        rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
-        
-        #send lHand to the origin with head offset
-        lHandPosV3 = util.getPosArray(lHandMx4)
-        lHandPosV3 = lHandPosV3 - headPosV3
-        lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
-
-        #send rForeArm to the origin with head offset
-        rForeArmPosV3 = util.getPosArray(rForeArmMx4)
-        rForeArmPosV3 = rForeArmPosV3 - headPosV3
-        rForeArmMx4 = util.setPos(rForeArmMx4, rForeArmPosV3)
-
-        self.inputArray  = util.getTransformArray(rHandMx4).tolist() \
-                    + util.getRotArray(headMx4).tolist() \
-                    + util.getTransformArray(lHandMx4).tolist()
-
-        self.outputArray = util.getPosArray(rForeArmMx4).tolist()      
-
-        #for draw
-        self.manipulatedTransforms = [rHandMx4,headMx4,lHandMx4]
-        self.manipulatedPositions = [self.outputArray]
-
-        # stuff for recompose
-        self.headPosV3 = headPosV3
-        self.rForeArmPosV3 = rForeArmPosV3
-
-        #return as python lists...apparently.
-        return self.inputArray, self.outputArray
-
-    def updatePredicted(self,predictedOutput):
-        ''' 
-        Format results of prediction into positions and transforms.
-        These will be drawn.
-        '''
-        self.predictedPositions = [predictedOutput]
-        self.predictedTransforms = []
-
-    def updateRecompose(self):
-        '''Recompose self.predictedPositions and self.predictedTransforms.'''
-        self.recomposedTransforms=[]
-        self.recomposeElbowPos = self.predictedPositions[0]
-        self.recomposedPositions = [self.headPosV3+self.recomposeElbowPos]
-        transforms = copy.copy(self.manipulatedTransforms)
-        for mx in transforms:
-            pos = util.getPosArray(mx)
-            pos = pos + self.headPosV3
-            self.recomposedTransforms.append(util.setPos(mx, pos))
-
-
-
-
-class predictNeckPosRot(operation):
-    def __init__(self):
-        super(predictNeckPosRot, self).__init__()
-        #joints not to draw in recompose skeleton
-        self.skipJoints = ['neck','rHand']
-    
-    def operate(self,transformList):
-        """
-                                ["head", "world"],
-                                ["rHand", "world"],    
-                                ["lHand", "world"],    
-                                ["neck", "world"],    
-        """
-        self.extractedTransforms = copy.deepcopy(transformList)
-
-        headMx4 = transformList[0]
-        rHandMx4 = transformList[1]
-        lHandMx4 = transformList[2]
-        neckMx4 = transformList[3]
-
-        #get head position v3
-        headPosV3 = util.getPosArray(headMx4)
-
-        #send head to origin
-        headMx4 = util.extractRot(headMx4)
-
-        #send rHand to the origin with head offset
-        rHandPosV3 = util.getPosArray(rHandMx4)
-        rHandPosV3 = rHandPosV3 - headPosV3
-        rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
-        
-        #send lHand to the origin with head offset
-        lHandPosV3 = util.getPosArray(lHandMx4)
-        lHandPosV3 = lHandPosV3 - headPosV3
-        lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
-
-        #send neck to the origin with head offset
-        neckPosV3 = util.getPosArray(neckMx4)
-        neckPosV3 = neckPosV3 - headPosV3
-        neckMx4 = util.setPos(neckMx4, neckPosV3)
-
-        self.inputArray  = util.getTransformArray(rHandMx4).tolist() \
-                    + util.getRotArray(headMx4).tolist() \
-                    + [headPosV3[1]]\
-                    + util.getTransformArray(lHandMx4).tolist()
-
-        self.outputArray = util.getPosArray(neckMx4).tolist() + util.getRotArray(neckMx4).tolist()
-
-        #for draw
-        self.manipulatedTransforms = [rHandMx4,headMx4,lHandMx4,neckMx4]
-        self.manipulatedPositions = [util.getPosArray(neckMx4)]
-
-        # stuff for recompose
-        self.headPosV3 = headPosV3
-        self.neckPosV3 = neckPosV3
-
-        #return as python lists...apparently.
-        return self.inputArray, self.outputArray
-
-    def updatePredicted(self,predictedOutput):
-        ''' 
-        Format results of prediction into positions and transforms.
-        These will be drawn.
-        '''
-        self.predictedPositions = [predictedOutput[0:3]]
-        neckTransform = util.setPos(util.identity(),predictedOutput[0:3])
-
-        neckTransform = util.setRot(neckTransform,predictedOutput[3:12])
-        neckTransform = util.orthonormalize(neckTransform)
-        self.predictedTransforms = [neckTransform]
-
-    def updateRecompose(self):
-        '''Recompose self.predictedPositions and self.predictedTransforms.'''
-        self.recomposeNeckPos = copy.copy(self.predictedPositions[0])
-        self.recomposedPositions = [self.headPosV3+self.recomposeNeckPos]
-        recomposedNeckTransform = copy.copy(self.predictedTransforms[0])
-        recomposedNeckTransform = util.setPos(recomposedNeckTransform,self.recomposedPositions[0])
-        self.recomposedTransforms = [recomposedNeckTransform]
-
-        transforms = copy.copy(self.manipulatedTransforms)
-        for transform in transforms[0:3]:
-            self.recomposedTransforms.append(util.addPosToMx4(transform,self.headPosV3))
-        #sself.recomposedTransforms = self.recomposedTransforms + transforms[0:3] # leave off forearm
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class predictEverything(operation):
-    def __init__(self):
-        super(predictEverything, self).__init__()
-        #joints not to draw in recompose skeleton
-        self.skipJoints = []
-    
-    def operate(self,transformList):
-        """
-                            ["head", "world"],
-                            ["rHand", "world"],    
-                            ["lHand", "world"],    
-                            ["hip", "world"],    
-                            ["abdomen", "world"],    
-                            ["chest", "world"],    
-                            ["neck", "world"],    
-                            ["rCollar", "world"],    
-                            ["rShldr", "world"],    
-                            ["rForeArm", "world"],     
-                            ["rButtock", "world"],    
-                            ["rThigh", "world"],    
-                            ["rShin", "world"],    
-                            ["rFoot", "world"],    
-                            ["rForeArm", "world"],
-                            ["lCollar", "world"],    
-                            ["lShldr", "world"],    
-                            ["lForeArm", "world"],       
-                            ["lButtock", "world"],    
-                            ["lThigh", "world"],    
-                            ["lShin", "world"],    
-                            ["lFoot", "world"],    
-                            ["lForeArm", "world"]
-        """
-        self.extractedTransforms = copy.deepcopy(transformList)
-
-
-        self.inputArray = []
-        for transform in transformList:
-            self.inputArray = self.inputArray + util.getTransformArray(transform,exclude4thColumn=True).tolist()
-
-        #return as python lists...apparently.
-        return self.inputArray, self.outputArray
-
-    def updatePredicted(self,predictedOutput):
-        ''' 
-        Format results of prediction into positions and transforms.
-        These will be drawn.
-        '''
-        self.predictedPositions = [predictedOutput[0:3]]
-        elbowTransform = util.setPos(util.identity(),predictedOutput[0:3])
-
-        elbowTransform = util.setRot(elbowTransform,predictedOutput[3:12])
-        elbowTransform = util.orthonormalize(elbowTransform)
-        self.predictedTransforms = [elbowTransform]
-
-    def updateRecompose(self):
-        '''Recompose self.predictedPositions and self.predictedTransforms.'''
-        self.recomposeElbowPos = copy.copy(self.predictedPositions[0])
-        self.recomposedPositions = [self.headPosV3+self.recomposeElbowPos]
-        recomposedElbowTransform = copy.copy(self.predictedTransforms[0])
-        recomposedElbowTransform = util.setPos(recomposedElbowTransform,self.recomposedPositions[0])
-        self.recomposedTransforms = [recomposedElbowTransform]
-
-        transforms = copy.copy(self.manipulatedTransforms)
-        for transform in transforms[0:3]:
-            self.recomposedTransforms.append(util.addPosToMx4(transform,self.headPosV3))
-        #self.recomposedTransforms = self.recomposedTransforms + transforms[0:3] # leave off forearm
-
-
-
-
 ###
 # Do the same thing to N joints
 class predictNPosRot(operation):
@@ -751,11 +286,11 @@ class predictNPosRot(operation):
 
         if self.positionOnly:
             self.currentInputArray = []
-            self.currentInputArray = util.getTransformArray(rHandMx4,True).tolist() \
+            self.currentInputArray = util.getPosArray(rHandMx4).tolist() \
                             + util.getRotArray(headMx4).tolist() \
                             + [headPosV3[1]]\
                             + velocity.tolist()\
-                            + util.getTransformArray(lHandMx4,True).tolist()
+                            + util.getPosArray(lHandMx4).tolist()
         else:
             self.currentInputArray = []
             self.currentInputArray = util.getTransformArray(rHandMx4,True).tolist() \
@@ -796,6 +331,10 @@ class predictNPosRot(operation):
         # stuff for recompose
         self.headPosV3 = headPosV3
         #self.rForeArmPosV3 = rForeArmPosV3
+
+        self.rHandMx4 = rHandMx4
+        self.lHandMx4 = lHandMx4
+        self.headMx4 = headMx4
 
         #return as python lists...apparently.
         return self.inputArray, self.outputArray
@@ -864,14 +403,20 @@ class predictNPosRot(operation):
                 self.recomposedTransforms.append(util.addPosToMx4(transform,self.headPosV3))
 
 
+
         #now lets recompose the predicted positions and transforms. (mark predictd with magenta dot)
         for pos in self.predictedPositions:
             #get the predicted pos to recompose
             position = copy.copy(pos)
         
             #recompose the position
-            self.recomposedPositions.append(self.headPosV3+position)
+            self.recomposedPositions.append(position+self.headPosV3)
         
+        if self.positionOnly:
+            self.recomposedPositions.append(util.getPosArray(self.headMx4)+self.headPosV3)
+            self.recomposedPositions.append(util.getPosArray(self.rHandMx4)+self.headPosV3)
+            self.recomposedPositions.append(util.getPosArray(self.lHandMx4)+self.headPosV3)
+
  
         if not self.positionOnly:       
             for i in range(len(self.predictedTransforms)):
@@ -995,5 +540,84 @@ class predictNPosRot(operation):
 
 '''
 
+
+class predictNPos(predictNPosRot):
+    def __init__(self):
+        super(predictNPos, self).__init__()
+        self.positionOnly = True
+
+    def drawRecomposed(self,transformScale):
+        self.runPrediction()
+        self.updateRecompose()
+
+
+        if not self.positionOnly:
+            util.drawMxs(self.recomposedTransforms,transformScale)
+        util.drawPoints(self.recomposedPositions,9,util.color.magenta)
+
+        '''
+        0 hip
+        1 abdomen
+        2 neck 
+        3 rShldr
+        4 rForeArm
+        5 lShldr
+        6 lForeArm
+        7 rFoot
+        8 lFoot
+        9 rShin
+        10 lShin
+        11 rThigh
+        12 lThigh
+        13 head
+        14 rHand
+        15 lHand
+
+
+        14   ["rHand", "world"],    
+        4   ["rForeArm", "world"],     
+        3   ["rShldr", "world"],    
+        2   ["neck", "world"],       
+        5   ["lShldr", "world"],    
+        6   ["lForeArm", "world"],    
+        15   ["lHand", "world"],    
+
+        13   ["head", "world"],
+        2   ["neck", "world"],       
+        1   ["abdomen", "world"],         
+        0   ["hip", "world"],  
+
+        7   ["rFoot", "world"],    
+        9   ["rShin", "world"],    
+        11  ["rThigh", "world"],    
+        0   ["hip", "world"],  
+        12  ["lThigh", "world"] 
+        10  ["lShin", "world"],    
+        8   ["lFoot", "world"],    
+
+        '''  
+        util.drawLines([self.recomposedPositions[14],\
+                        self.recomposedPositions[4],\
+                        self.recomposedPositions[3],\
+                        self.recomposedPositions[2],\
+                        self.recomposedPositions[5],\
+                        self.recomposedPositions[6],\
+                        self.recomposedPositions[15]],\
+                        self.lineSize,self.lineColor)
+
+        util.drawLines([self.recomposedPositions[13],\
+                        self.recomposedPositions[2],\
+                        self.recomposedPositions[1],\
+                        self.recomposedPositions[0]],\
+                        self.lineSize,self.lineColor)
+
+        util.drawLines([self.recomposedPositions[7],\
+                        self.recomposedPositions[9],\
+                        self.recomposedPositions[11],\
+                        self.recomposedPositions[0],\
+                        self.recomposedPositions[12],\
+                        self.recomposedPositions[10],\
+                        self.recomposedPositions[8]],\
+                        self.lineSize,self.lineColor)
 
 
