@@ -3,6 +3,7 @@ import re
 import numpy as np
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
+import math
 
 pyListType = type([])
 npListType = type(np.arange(1))
@@ -272,3 +273,59 @@ def diffMxPos(mxA,mxB):
     two transforms.
     """
     return np.linalg.norm(np.subtract(mxA[3:4,0:3],mxB[3:4,0:3])[0])
+
+
+
+def rotateVectorAboutAxis(v, axis, degrees):
+    """
+    Rotate vector v about vector axis counter clockwise in degrees.
+    """
+
+
+
+    #convert degrees to radians
+    theta = degrees*(math.pi/180)
+    axis = np.asarray(axis)
+
+    axis = axis/math.sqrt(np.dot(axis, axis))
+    a = math.cos(theta/2.0)
+    b, c, d = -axis*math.sin(theta/2.0)
+    aa, bb, cc, dd = a*a, b*b, c*c, d*d
+    bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
+    myVector =  np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
+                     [2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab)],
+                     [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]])
+
+    return np.dot(myVector,v)
+
+
+def rotateMxAboutAxis(mx,axis,degrees):
+    """
+    0 is x, y is 1, z is 2
+
+    """
+
+    xAxis = mx[0:1,0:3].flatten().tolist()[0]
+    yAxis = mx[1:2,0:3].flatten().tolist()[0]
+    zAxis = mx[2:3,0:3].flatten().tolist()[0]
+
+
+    if axis==0:
+        #y about x
+        mx[1:2,0:3] = rotateVectorAboutAxis(yAxis,xAxis,degrees)
+        #z about x
+        mx[2:3,0:3] = rotateVectorAboutAxis(zAxis,xAxis,degrees)
+    elif axis==1:
+        #x about y
+        mx[0:1,0:3] = rotateVectorAboutAxis(xAxis,yAxis,degrees)
+        #z about y
+        mx[2:3,0:3] = rotateVectorAboutAxis(zAxis,yAxis,degrees)
+    else:
+        #x about z
+        mx[0:1,0:3] = rotateVectorAboutAxis(xAxis,zAxis,degrees)
+        #y about z
+        mx[1:2,0:3] = rotateVectorAboutAxis(yAxis,zAxis,degrees)        
+
+    return mx
+
+

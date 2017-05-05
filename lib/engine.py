@@ -140,6 +140,7 @@ class engine(object):
         return transformsAtFrame
 
     def updateTransforms(self):
+        print "Updating Transforms"
         transforms = self.extractedTransformsAtFrame()
         if self.scene.type == "vive":
             transforms = self.operation.vive2fbx(transforms)

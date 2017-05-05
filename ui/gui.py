@@ -82,6 +82,7 @@ class UI(QtGui.QMainWindow):
         self.setupTimeLine()
 
         ####CONNECT UI ACTIONS TO METHOD CALLS
+        self.sceneList.setSortingEnabled(True)
         self.sceneList.itemSelectionChanged.connect(self.updateForSceneChange)
         self.configurationsList.itemSelectionChanged.connect(self.updateForEngineChange)
 
@@ -99,6 +100,17 @@ class UI(QtGui.QMainWindow):
         self.scaleTransforms()
         self.transformScaleSlider.valueChanged.connect(self.scaleTransforms)
 
+        self.uniformScaleSpinBox.setValue(self.graphicsObj.app.engine.operation.scaleOffset*100)
+        self.uniformScale()
+        self.uniformScaleSpinBox.valueChanged.connect(self.uniformScale)
+
+        self.headOffsetRotateYSpinBox.setValue(self.graphicsObj.app.engine.operation.rotateHeadDegrees)
+        self.rotateHead()
+        self.headOffsetRotateYSpinBox.valueChanged.connect(self.rotateHead)
+
+        self.headOffsetTranslateYSpinBox.setValue(self.graphicsObj.app.engine.operation.headTranslateY)
+        self.translateHead()
+        self.headOffsetTranslateYSpinBox.valueChanged.connect(self.translateHead)
         self.updateForSceneChange()
 
     def keyPressEvent(self, event):
@@ -209,11 +221,16 @@ class UI(QtGui.QMainWindow):
         Populate list with all training and testing data (fbx scenes)
         """
         self.uiSceneName2ObjectName = {}
+        self.graphicsObj.app.trainingScenes.sort()
         for scene in self.graphicsObj.app.trainingScenes:
             self.sceneList.addItem(scene.title)
             #a dict we can use to get the object name given the title
             self.uiSceneName2ObjectName[scene.title] = scene.title
-        
+
+        self.sceneList.sortItems()
+
+
+        self.graphicsObj.app.testingScenes.sort()
         for scene in self.graphicsObj.app.testingScenes:
             itemGuiName = scene.title + " TEST"
             self.sceneList.addItem(itemGuiName)
@@ -221,9 +238,33 @@ class UI(QtGui.QMainWindow):
             self.uiSceneName2ObjectName[itemGuiName] = scene.title
 
 
-    def scaleTransforms(self):
+
+
+    def uniformScale(self):        
+        """
+        Apply a scale to the matrix axes.
+        """
+        self.graphicsObj.app.engine.operation.scaleOffset = float(self.uniformScaleSpinBox.value()*.01)
+        self.graphicsObj.updateGL()
+
+
+    def rotateHead(self):        
         """
         Apply a scale the matrix axes.
+        """
+        self.graphicsObj.app.engine.operation.rotateHeadDegrees = float(self.headOffsetRotateYSpinBox.value())
+        self.graphicsObj.updateGL()
+
+    def translateHead(self):        
+        """
+        Apply a scale the matrix axes.
+        """
+        self.graphicsObj.app.engine.operation.headTranslateY = float(self.headOffsetTranslateYSpinBox.value())
+        self.graphicsObj.updateGL()
+
+    def scaleTransforms(self):
+        """
+        Uniform scale for vive telemetry
         """
         self.graphicsObj.transformScale = float(self.transformScaleSlider.value())
         self.graphicsObj.updateGL()
@@ -320,6 +361,7 @@ class Viewer3DWidget(QGLWidget):
         format.setSampleBuffers(True)
         self.setFormat(format)
         self.transformScale = 1.0
+        self.uniformScale = 1.0
 
     def paintGL(self):
         glEnable(GL_MULTISAMPLE)

@@ -41,6 +41,8 @@ class operation(object):
         self.lineColor = [1.0,1.0,1.0]
 
         self.scaleOffset = 1.0
+        self.rotateHeadDegrees = 0.0
+        self.headTranslateY = 0.0
 
         self.oldPoseDiff = 0
         self.curPoseDiff = 0
@@ -78,10 +80,17 @@ class operation(object):
         """
         self.inputArray = []
 
-    def vive2fbx(self,transformList):
+    def vive2fbx(self,transformListRaw):
+
+        transformList = copy.deepcopy(transformListRaw)
         hmdMx4 = transformList[0]
         rControllerMx4 = transformList[1]
         lControllerMx4 = transformList[2]
+
+        #uniform scale
+        hmdMx4[3:4,0:3] = hmdMx4[3:4,0:3]*self.scaleOffset
+        rControllerMx4[3:4,0:3] = rControllerMx4[3:4,0:3]*self.scaleOffset
+        lControllerMx4[3:4,0:3] = lControllerMx4[3:4,0:3]*self.scaleOffset       
 
         self.joints = joints('/home/daveotte/work/vr_avatar/rig/avatar.xml')
 
@@ -111,7 +120,7 @@ class operation(object):
         #send rHand to the origin with head offset
         rHandPosV3 = util.getPosArray(rHandMx4)
         rHandPosV3 = rHandPosV3 - headPosV3
-        rHandPosV3 = rHandPosV3 * self.scaleOffset
+        #rHandPosV3 = rHandPosV3 * self.scaleOffset
         rHandMx4 = util.setPos(rHandMx4, rHandPosV3)
         
         #LEFT
@@ -123,7 +132,7 @@ class operation(object):
         #send lHand to the origin with head offset (and scale...I'm bigger.)
         lHandPosV3 = util.getPosArray(lHandMx4)
         lHandPosV3 = lHandPosV3 - headPosV3
-        lHandPosV3 = lHandPosV3 * self.scaleOffset
+        #lHandPosV3 = lHandPosV3 * self.scaleOffset
         lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
 
         #we brought everything to the origin for easy scaling,
@@ -131,8 +140,14 @@ class operation(object):
 
         #put head back:
         headPosV3scaled = headPosV3
-        headPosV3scaled[1] = self.scaleHeightOffset * headPosV3[1]
+        #headPosV3scaled[1] = self.scaleHeightOffset * headPosV3[1]
         headMx4 = util.setPos(headMx4,headPosV3scaled)
+
+        #rotateHeadClockwise
+        headMx4 = util.rotateMxAboutAxis(headMx4,1,self.rotateHeadDegrees*-1)
+
+        #lowerHead
+        headMx4[3:4,1:2] = headMx4[3:4,1:2]+self.headTranslateY
 
         #put rHand back:
         rHandPosV3 = util.getPosArray(rHandMx4) + headPosV3scaled
@@ -142,15 +157,15 @@ class operation(object):
         lHandPosV3 = util.getPosArray(lHandMx4) + headPosV3scaled
         lHandMx4 = util.setPos(lHandMx4, lHandPosV3)
 
+
+
+
         #pack it up and return it.
         transformList[0] = headMx4
         transformList[1] = rHandMx4
         transformList[2] = lHandMx4
 
         return transformList
-
-
-
 
     def runPrediction(self):
         #that [0] needs to happen, but may not work that way.
@@ -673,8 +688,10 @@ class predictNPosRot(operation):
         self.skipJoints = ['rForeArm','rHand']
         self.timeBuffer = 6
     
-        self.scaleOffset = 0.75
+        self.scaleOffset = 0.82
         self.scaleHeightOffset = 0.85
+        self.rotateHeadDegrees = 25
+        self.headTranslateY = -17
 
         self.curPrevHeadList = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
 
