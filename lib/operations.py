@@ -42,6 +42,11 @@ class operation(object):
 
         self.scaleOffset = 1.0
 
+        self.oldPoseDiff = 0
+        self.curPoseDiff = 0
+
+        self.flip = False
+
     def setModelFiles(self,modelJsonFile,modelWeightsFile):
         self.modelJsonFile = modelJsonFile
         self.modelWeightsFile = modelWeightsFile               
@@ -72,7 +77,6 @@ class operation(object):
         when operation is used to extract transform on a new scene.
         """
         self.inputArray = []
-        print "Cache cleared."
 
     def vive2fbx(self,transformList):
         hmdMx4 = transformList[0]
@@ -170,12 +174,29 @@ class operation(object):
         self.runPrediction()  
         util.drawMxs(self.predictedTransforms,transformScale)  
         util.drawPoints(self.predictedPositions,9,util.color.magenta)
+        #self.updateStatistics()
 
     def drawRecomposed(self,transformScale):
         self.runPrediction()
         self.updateRecompose()
         util.drawMxs(self.recomposedTransforms,transformScale)
         util.drawPoints(self.recomposedPositions,9,util.color.magenta)
+
+    def updateStatistics(self):
+        """
+        Run a diff between the manipulated transforms and the
+        predicted transforms, and then set attrs that store
+        the current diff, and a running average.
+        """
+        self.posDiff = 0
+        for i in range(len(self.predictedTransforms)):
+            self.posDiff = self.posDiff + util.diffMxPos(self.predictedTransforms[i], self.manipulatedTransforms[i])
+        self.oldPoseDiff = copy.deepcopy(self.curPoseDiff)
+        self.curPoseDiff = self.posDiff/len(self.predictedTransforms)
+        self.avgPosediff = (self.oldPoseDiff + self.curPoseDiff)/2
+        print "---"
+        print "currPoseDiff: " + str(self.curPoseDiff)
+        print "avgPosediff: " + str(self.avgPosediff)
 
 
 class predictElbowPosRot(operation):
@@ -269,6 +290,7 @@ class predictElbowPosRotVive(operation):
         #joints not to draw in recompose skeleton
         self.skipJoints = ['rForeArm','rHand']
         self.scaleOffset = .85
+
     def operate(self,transformList):
         """
                                 ["head", "world"],
@@ -659,7 +681,7 @@ class predictNPosRot(operation):
 
         self.positionOnly = False
 
-    def operate(self,transformList):
+    def operate(self,transformList,mirror=False):
         """
                                 ["head", "world"],
                                 ["rHand", "world"],    
@@ -667,11 +689,12 @@ class predictNPosRot(operation):
                                 ["rForeArm", "world"],   
                                 .... 
         """
-        #The number of frames stored to deliver as training input
         self.extractedTransforms = copy.deepcopy(transformList)
 
-        for i in range(len(self.extractedTransforms)):
-            self.extractedTransforms[i] = util.flipMx(self.extractedTransforms[i])
+        if mirror:
+            for i in range(len(transformList)):
+                transformList[i] = util.flipMx(transformList[i])
+
 
 
         headMx4 = transformList.pop(0)
@@ -709,7 +732,6 @@ class predictNPosRot(operation):
         #length of array divided by one frame's worth of dimensions
         # 12 + 9 + 1 + 12 = 34 per frame 
 
-
         if self.positionOnly:
             self.currentInputArray = []
             self.currentInputArray = util.getTransformArray(rHandMx4,True).tolist() \
@@ -726,7 +748,6 @@ class predictNPosRot(operation):
                             + util.getTransformArray(lHandMx4,True).tolist()            
 
         while len(self.inputArray)/len(self.currentInputArray) < self.timeBuffer:
-            print "there's not enough in the buffer."
             self.inputArray = self.inputArray + self.currentInputArray
         
         #lop off the first frame
@@ -736,7 +757,7 @@ class predictNPosRot(operation):
         self.inputArray = self.inputArray + self.currentInputArray
         
         #and the things we are trying to predict
-        self.outputArray = []
+        self.outputArray = []     
 
         if self.positionOnly:
             for transform in transformList:
@@ -746,7 +767,6 @@ class predictNPosRot(operation):
                 self.outputArray = self.outputArray + util.getPosArray(transform).tolist() + util.getRotArray(transform).tolist()
 
         #for draw
-
         if not self.positionOnly:
             self.manipulatedTransforms = [rHandMx4,headMx4,lHandMx4] + transformList
 
@@ -793,7 +813,7 @@ class predictNPosRot(operation):
             self.predictedTransforms = []
             self.predictedPositions = []
             for i in range(self.transformCount):
-                print "this is my index: %d"%(i)
+                #print "this is my index: %d"%(i)
                 ###
                 ### turn the huge output array into prediction transforms
 

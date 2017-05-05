@@ -17,6 +17,7 @@ import numpy as np
 from keras.models import model_from_json
 from keras.models import Sequential
 from pprint import pprint
+import copy
 
 class engine(object):
     """
@@ -36,9 +37,6 @@ class engine(object):
             print "operations.py has no '%s' class to process the scenes."% (self.nnConfig.fbxMethod)
 
         self.operation = fbxOperationClass()
-
-        #viveOperationClass = getattr(op, self.nnConfig.viveMethod)
-        #self.viveOperation = viveOperationClass()
         
         self.loadModel()
 
@@ -50,6 +48,7 @@ class engine(object):
             print "There are no training scenes."
         self.frame = 0
         self.data = False
+        self.dataMirror = []
 
     @property 
     def title(self):
@@ -57,19 +56,39 @@ class engine(object):
 
     def setData(self):
         self.data = []
-        for transforms in self.extractedTransforms():
-            inputLinePortion, outputLinePortion = self.operation.operate(transforms)
-            line = inputLinePortion + outputLinePortion
-            self.data.append(line)
+        extractedTransforms = self.extractedTransforms()
+
+        #we need to deep copy, since processing will change the list for another use.
+        if self.nnConfig.mirror:
+            self.processTransforms(extractedTransforms,mirror=True)
+
+        inputLinePortion, outputLinePortion = self.processTransforms(extractedTransforms, mirror=False)
+        
         self.inputStart = 0
         self.inputEnd = len(inputLinePortion)
         self.outputStart = self.inputEnd  
         self.outputEnd = self.outputStart + len(outputLinePortion)    
-        
+
+        #does this free memory? It's was a pretty darn big list.
+        extractedTransforms = []
+
+    def processTransforms(self,extractedTransforms,mirror=False):
+        if mirror:
+            print "================================ MIRRORING ==========================================="
+        else:
+            print "=============================== NO MIRRORING ========================================"
+        for sceneTransforms in extractedTransforms:
+            #new scene, so clear frame cache
+            self.operation.clearCache()
+            sceneTransformsCopy = copy.deepcopy(sceneTransforms)
+            for transforms in sceneTransformsCopy:
+                inputLinePortion, outputLinePortion = self.operation.operate(transforms,mirror)
+                line = inputLinePortion + outputLinePortion
+                self.data.append(line)
+        return inputLinePortion, outputLinePortion        
 
     def loadModel(self):
         self.operation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
-        #self.viveOperation.setModelFiles(self.nnConfig.readNnFile,self.nnConfig.readWeightsFile)
 
 
     def extractedTransforms(self):
@@ -85,14 +104,12 @@ class engine(object):
         """
         bigTransformList = []
         for scene in self.trainingScenes:
-            #new scene, so clear frame cache
-            self.operation.clearCache()
 
             #add 1 to start time to avoid initial t-pose. I'm not sure why I'm adding
             #1 to endTime. I'm sure it's for a great reason.
-            bigTransformList =  bigTransformList + self.extractedTransformsOverFrameRange(scene,\
-                                                                                scene.startTime+1,\
-                                                                                scene.endTime+1)
+            bigTransformList.append(self.extractedTransformsOverFrameRange(scene,\
+                                                                           scene.startTime+1,\
+                                                                           scene.endTime+1))
             scene.destroy()
         
         return bigTransformList
@@ -123,7 +140,6 @@ class engine(object):
         return transformsAtFrame
 
     def updateTransforms(self):
-            
         transforms = self.extractedTransformsAtFrame()
         if self.scene.type == "vive":
             transforms = self.operation.vive2fbx(transforms)

@@ -260,18 +260,15 @@ def normalizeData(inputData,dataMeanList,dataStdevList):
 
 
 def flipMx(mx,axis=0):
-    mxList = mx.tolist()
-    print "efore " + str(mxList[3][0])
-    mxList[0][0] = mxList[0][0] * -1
-    mxList[1][0] = mxList[1][0] * -1
-    mxList[2][0] = mxList[2][0] * -1
-    mxList[3][0] = mxList[3][0] * -1
-
+    #invert the x column
+    mx[0:4,0] = mx[0:4,0] * -1
     #flip the y axis
-    mxList[1][0] = mxList[1][0]*-1
-    mxList[1][1] = mxList[1][1]*-1
-    mxList[1][2] = mxList[1][2]*-1
+    mx[1:2,0:3] = mx[1:2,0:3]*-1
+    return mx
 
-
-
-    return np.array(mxList)
+def diffMxPos(mxA,mxB):
+    """
+    Return the distance between the positions of
+    two transforms.
+    """
+    return np.linalg.norm(np.subtract(mxA[3:4,0:3],mxB[3:4,0:3])[0])
