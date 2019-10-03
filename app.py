@@ -1,27 +1,15 @@
-from multiprocessing import Process
 import lib.nn as nn
 from ui.gui import UI
-import sys
-import sys
 from lib.data import *
 from lib.engine import *
 from lib.nn import *
-from keras.models import Sequential
-from keras.models import model_from_json
-from keras.layers import Dense
-import keras.optimizers
-import numpy
-from keras.layers.normalization import BatchNormalization
-from ui import gui
-from PyQt4 import QtGui
-import os
-import random
+
+
 import json
-import time
-from threading import Thread
+
 
 # Application class
-class App(object):
+class App:
     def __init__(self):
         
         jsonNodes            = json.loads(open(util.getJsonFile()).read())
@@ -43,7 +31,7 @@ class App(object):
         self.nn.job.start()
 
     def terminate(self):
-        print "========================Terminating: %s========================"%(self.nn.name)
+        print ("========================Terminating: %s========================"%(self.nn.name))
         self.nn.job.terminate()
 
     def initializeScene(self,scene): 
@@ -55,12 +43,12 @@ class App(object):
                 self.engine = engine
                 self.engine.loadModel()
                 return
-        print "Engine: %s does not exist."%(engineName)
+        print ("Engine: %s does not exist."%(engineName))
 
 def runNN(nn):
-    print "========================Training: %s========================"%(nn.name)
+    print ("========================Training: %s========================"%(nn.name))
     nn.run()
-    print "========================Finished training: %s========================"%(nn.name)
+    print ("========================Finished training: %s========================"%(nn.name))
 
 if __name__ == "__main__":
     if len(sys.argv)==1:

@@ -3,13 +3,13 @@ import ast
 import numpy as np
 import lib.util as mxUtil
 
-class joints(object):
+class joints:
     def __init__(self,jointsXml):
-    	tree = ET.parse(jointsXml)
-    	root = tree.getroot()
+        tree = ET.parse(jointsXml)
+        root = tree.getroot()
         self.joints = []
         for child in root.iter('joint'):
-        	self.joints.append(joint(child.attrib))
+            self.joints.append(joint(child.attrib))
 
         self.setParents()
         self.setChildren()
@@ -21,23 +21,23 @@ class joints(object):
                 return j       
 
     def printJoints(self):
-        print str(len(self.joints))
+        print (str(len(self.joints)))
         for j in self.joints:
-            print j
+            print (j)
 
     def setParents(self):
-    	for joint in self.joints:
-    		if joint.parent != 'world':
-    			joint.jointParent = self.getJoint(joint.parent)
+        for joint in self.joints:
+            if joint.parent != 'world':
+                joint.jointParent = self.getJoint(joint.parent)
 
     def setChildren(self):
-    	for joint in self.joints:
-    		if joint.jointParent:
-    			joint.jointParent.AddChild(joint)
+        for joint in self.joints:
+            if joint.jointParent:
+                joint.jointParent.AddChild(joint)
 
-class joint(object):
+class joint:
     def __init__(self,jointDict):
-    	self.__dict__ = jointDict
+        self.__dict__ = jointDict
         self.children = []
         self.npMx = np.matrix(np.array(list(ast.literal_eval(self.transform))).reshape(4,4))
         self.jointParent = False
@@ -55,21 +55,21 @@ class joint(object):
         self.children.append(childNode)
 
     def GetNodeGlobalTransform(self,time=0):
-    	'''
-    	npMx is a local matrix offset from the parent. This
-    	means we recursively multiply matrices to derive the global
-    	transform.
-    	'''
-    	if self.jointParent:
-    		return self.npMx*self.jointParent.GetNodeGlobalTransform()
-    	else:
-    		#no parent, so local offset is same as world transform.
-    		return self.npMx
+        '''
+        npMx is a local matrix offset from the parent. This
+        means we recursively multiply matrices to derive the global
+        transform.
+        '''
+        if self.jointParent:
+            return self.npMx*self.jointParent.GetNodeGlobalTransform()
+        else:
+            #no parent, so local offset is same as world transform.
+            return self.npMx
 
     def GetNodeLocalTransform(self,time=0):
-    	return self.npMx
+        return self.npMx
 
-class nodes(object):
+class nodes:
     def __init__(self,jointRoot,jointsDict,jointOrder,npList):
         self.joints = []
         self.jointsDict = jointsDict
@@ -78,7 +78,7 @@ class nodes(object):
         self.startIndex = 0
         self.endIndex = 16
         self.addTransforms(jointOrder)
-        print "this is the count: " + str(len(self.joints))
+        print ("this is the count: " + str(len(self.joints)))
 
     def makeJoint(self, jointName):
         nodeObj = node(jointName)
@@ -104,12 +104,12 @@ class nodes(object):
 
 
     def printJoints(self):
-        print str(len(self.joints))
+        print (str(len(self.joints)))
         for j in self.joints:
-            print j
+            print (j)
 
 
-class node(object):
+class node:
     def __init__(self,jointName):
         self.name = jointName
         self.children = []

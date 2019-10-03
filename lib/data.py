@@ -1,21 +1,9 @@
-from multiprocessing import Process
-import os
-import json
-import site
-import random
-import sys
-import util
-from scene import *
-from path import Path
-from threading import Thread
-import ast
-from collections import OrderedDict
+
+from lib.scene import *
+from pathlib import Path
 from FbxCommon import *
-import numpy as np
-from pprint import pprint
-
-
-class dataManager(object):
+import lib.util as util
+class dataManager:
     """
     Base class. Converts json nodes to python objects with json node attrs as properties.
     Methods added to access/manipulate the json data.
@@ -23,7 +11,7 @@ class dataManager(object):
     """
     def __init__(self, dataType):
         self.dataType = dataType
-        print "Getting Data type: %s"%dataType
+        print ("Getting Data type: %s"%dataType)
         self.dataObjects = self.getObjects(json.loads(open(util.getJsonFile()).read()))      
         
     def getObjects(self, jsonNodes):
@@ -57,7 +45,7 @@ class dataManager(object):
 
 class sceneManager(dataManager):
     """
-    Manages scene data stored on disk in organized directories (as fbx files or vive .csv telemetry).
+    Manages Scene data stored on disk in organized directories (as fbx files or vive .csv telemetry).
     """
     def __init__(self, groupIndices, dataType="sceneGroup"):
         dataManager.__init__(self, dataType) 
@@ -72,7 +60,7 @@ class sceneManager(dataManager):
         return self.scenesByGroupIndices(self.groupIndices)
 
     def scenesByGroupIndices(self,groupIndices):
-        print str(groupIndices) + "=========================="
+        print (str(groupIndices) + "==========================")
         fbxSceneObjects = []
         for g in self.sceneGroupObjectsByIndices(groupIndices):
             fbxSceneObjects = fbxSceneObjects + g.scenesInGroup()
@@ -85,17 +73,17 @@ class sceneManager(dataManager):
         """
         sceneGroupObjects = []
         for sceneGroupIndex in groupIndices:
-            print 'Getting sceneGroup: %s '%(sceneGroupIndex)
+            print ('Getting sceneGroup: %s '%(sceneGroupIndex))
             sceneGroupObjects.append(self.getObject(sceneGroupIndex))
         return sceneGroupObjects
 
-class baseData(object):
+class baseData:
     def __init__(self, jsonNode):
         self.__dict__ = jsonNode
 
     @property 
     def title(self):
-        return camel2Title(self.name)
+        return util.camel2Title(self.name)
 
 class sceneGroup(baseData):
     """
@@ -112,7 +100,7 @@ class sceneGroup(baseData):
         files = []
         if hasattr(self, 'dir'):
             for f in os.listdir(self.dir):
-                #could be an fbx scene, or my made up format of vive telemetry).
+                #could be an fbx Scene, or my made up format of vive telemetry).
                 if f.endswith('.fbx') or f.endswith('.csv'):
                     files.append(self.dir+'/'+f)
         return files
@@ -120,25 +108,25 @@ class sceneGroup(baseData):
     def sceneFileNamesInGroup(self):
         names = []
         for file in self.sceneFilesInGroup()():
-            names.append(Path(file).basename())
+            names.append(Path(file).stem)
         return names
 
     def scenesInGroup(self):
         scenesInGroup = []
         for f in self.sceneFilesInGroup():
-            print f
+            print (f)
             sceneClass = self.sceneClass(f)
             scenesInGroup.append(sceneClass(f))
         return scenesInGroup
 
     def sceneClass(self,file):
         '''
-        From the file extension, determine scene class to create.
+        From the file extension, determine Scene class to create.
         '''
         if file.endswith(".fbx"):
             sceneClass = eval("fbxScene")
         elif file.endswith(".csv"):
-            print "Found csv ====================================================="
+            print ("Found csv =====================================================")
             sceneClass = eval("viveScene")
 
         return sceneClass
@@ -184,15 +172,15 @@ class nnConfigData(baseData):
         self.writeLogFile = self.writeDir+"/"+self.name+"_log.txt"
         self.writeCsvFile = self.writeDir+"/"+self.name+"_output.csv"
 
-        print "Setting write file: %s"%(self.writeWeightsFile)
-        print "Setting read file: %s"%(self.readWeightsFile)
+        print ("Setting write file: %s"%(self.writeWeightsFile))
+        print ("Setting read file: %s"%(self.readWeightsFile))
         
     def checkDir(self,pathBase,i):
         suffix = '%03d'%i
         logDir = Path(pathBase+str(suffix))
         nextId = i+1
         prevId = i-1
-        print "Checking isdir: " + str(logDir.abspath())
+        print ("Checking isdir: " + str(logDir.abspath()))
         if os.path.isdir(str(logDir.abspath())):
             self.checkDir(pathBase,nextId)
         else:

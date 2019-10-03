@@ -1,25 +1,13 @@
-from multiprocessing import Process
 
-import os
-import json
-import site
-import random
 import sys
-import re
 import util 
 import lib.operations as op
-from path import Path
-from threading import Thread
-import ast
-from collections import OrderedDict
+
 from FbxCommon import *
-import numpy as np
-from keras.models import model_from_json
-from keras.models import Sequential
-from pprint import pprint
+
 import copy
 
-class engine(object):
+class engine:
     """
     Composes nn data using and an nnConfig object and list of scenes.
     """
@@ -34,18 +22,18 @@ class engine(object):
         try:
             self.operation = fbxOperationClass = getattr(op, self.nnConfig.fbxMethod)
         except:
-            print "operations.py has no '%s' class to process the scenes."% (self.nnConfig.fbxMethod)
+            print ("operations.py has no '%s' class to process the scenes."% (self.nnConfig.fbxMethod))
 
         self.operation = fbxOperationClass()
         
         self.loadModel()
 
-        #initially just make the first scene the current scene. 
+        #initially just make the first Scene the current Scene.
         try:
             self.scene = self.trainingScenes[0]
         except:
-            print sys.exc_info()[0]
-            print "There are no training scenes."
+            print (sys.exc_info()[0])
+            print ("There are no training scenes.")
         self.frame = 0
         self.data = False
         self.dataMirror = []
@@ -74,11 +62,11 @@ class engine(object):
 
     def processTransforms(self,extractedTransforms,mirror=False):
         if mirror:
-            print "================================ MIRRORING ==========================================="
+            print ("================================ MIRRORING ===========================================")
         else:
-            print "=============================== NO MIRRORING ========================================"
+            print ("=============================== NO MIRRORING ========================================")
         for sceneTransforms in extractedTransforms:
-            #new scene, so clear frame cache
+            #new Scene, so clear frame cache
             self.operation.clearCache()
             sceneTransformsCopy = copy.deepcopy(sceneTransforms)
             for transforms in sceneTransformsCopy:
@@ -123,7 +111,7 @@ class engine(object):
     def extractedTransformsAtFrame(self,scene=False,frame=False):
         """
         List of numpy mx4 lists. Numpy mx4 list is for each joint specified in nn configuration.
-        If scene not specified, scene assigned to self.scene is used (same for frame)
+        If Scene not specified, Scene assigned to self.Scene is used (same for frame)
         """
         if not scene:
             scene = self.scene
@@ -140,7 +128,7 @@ class engine(object):
         return transformsAtFrame
 
     def updateTransforms(self):
-        print "Updating Transforms"
+        print ("Updating Transforms")
         transforms = self.extractedTransformsAtFrame()
         if self.scene.type == "vive":
             transforms = self.operation.vive2fbx(transforms)
@@ -150,50 +138,53 @@ class engine(object):
         self.scene.drawSkeleton(self.frame,transformScale,drawTransforms)
 
     def drawSkeletonRecomposed(self,transformScale,drawTransforms=True):
-        print "draw recomposed skeleton at frame: %d"%(self.frame)
+        print ("draw recomposed skeleton at frame: %d"%(self.frame))
         self.updateTransforms()
         self.scene.drawSkeleton(self.frame,transformScale,drawTransforms,self.operation.skipJoints)
 
     def drawExtracted(self,transformScale):
-        print "draw extracted at frame: %d"%(self.frame)
+        print ("draw extracted at frame: %d"%(self.frame))
         self.updateTransforms()
         self.operation.drawExtracted(transformScale)
 
     def drawManipulated(self,transformScale):
-        print "draw manipulated at frame: %d"%(self.frame)
+        print ("draw manipulated at frame: %d"%(self.frame))
         self.updateTransforms()
         self.operation.drawManipulated(transformScale)
 
     def drawPredicted(self,transformScale):
-        print "draw predicted at frame: %d"%(self.frame)
+        print ("draw predicted at frame: %d"%(self.frame))
         self.updateTransforms()
         self.operation.drawPredicted(transformScale)
 
     def drawRecomposed(self,transformScale):
-        print "draw recomposed at frame: %d"%(self.frame)
+        print ("draw recomposed at frame: %d"%(self.frame))
         self.updateTransforms()
         self.operation.drawRecomposed(transformScale)
 
     def write(self):
         writeDir = self.nnConfig.writeCsvFile.dirname()
         if not writeDir.isdir():
-            print "Making log dir: %s"%(writeDir)
+            print ("Making log dir: %s"%(writeDir))
             writeDir.makedirs()
 
         dataFile = open(self.nnConfig.writeCsvFile,'w')
         for line in self.data:
-            #convert line to string. 
-            l = ', '.join(str(ln) for ln in line)
-            dataFile.write("%s\n" % l)
+            #convert line to string.
+            for ln in line:
+                string = ", "
+                ln = str(ln)
+                l = string.join(ln)
+                dataFile.write("%s\n" % l)
 
     def setScene(self,sceneName):
         for scene in self.scenes:
             if scene.name == sceneName:
                 self.scene = scene
-                print "Scene set to: %s"%(self.scene.title)
+                print ("Scene set to: %s"%(self.scene.title))
                 return
-        print "Scene: %s does not exist."%(sceneName)
+        print ("Scene: %s does not exist."%(sceneName))
 
     def printData(self):
         for l in self.data:
-            print l
+            print (l)

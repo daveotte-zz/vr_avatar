@@ -1,35 +1,26 @@
-from multiprocessing import Process
 
-import os
-import json
-import site
-import random
 import sys
-import re
-import util
-from rig.joints import *
+
 from lib.operations import *
-from path import Path
-from threading import Thread
+from pathlib import Path
 import ast
-from collections import OrderedDict
+
 sys.path.append('/usr/local/lib/python2.7/site-packages/ImportScene')
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
 from FbxCommon import *
 import numpy as np
 from OpenGL.GL import *
-from pprint import pprint
 
 
 
 
-class scene(object):
-    """scene base class"""
+class Scene:
+    """Scene base class"""
     def __init__(self,fileName):
         self.fileName = fileName 
         self.needsInitializing = True 
-        self.title = self.name = Path(self.fileName).basename()
+        self.title = self.name = Path(self.fileName).stem
         self.type = "fbx"
 
     @property
@@ -109,9 +100,9 @@ class scene(object):
         self.initialize()
         return self.jointNameAndIndexDict[jointName]
 
-class viveScene(scene):
+class viveScene(Scene):
     """
-    Library to work with recordered vive telemetry scene (a .csv file).
+    Library to work with recordered vive telemetry Scene (a .csv file).
     """
     def __init__(self, fileName):
         super(viveScene, self).__init__(fileName)
@@ -119,12 +110,12 @@ class viveScene(scene):
 
     def initialize(self):
         if self.needsInitializing:
-            print "Initializing vive scene: %s"%(self.fileName)
-            #load scene into lScene?
+            print ("Initializing vive Scene: %s"%(self.fileName))
+            #load Scene into lScene?
             self.needsInitializing          = False
             self.fileLines = [line.rstrip('\r\n') for line in open(self.fileName)]
             npList = np.loadtxt(self.fileName,skiprows=1,delimiter=',')
-            #first line of file has a dict representation of scene info. Handy, right?
+            #first line of file has a dict representation of Scene info. Handy, right?
             self.configDict = ast.literal_eval(self.fileLines.pop(0))
             self.jointsObj  = nodes(self.configDict['jointRoot'], \
                                     self.configDict['joints'],\
@@ -155,14 +146,14 @@ class viveScene(scene):
 
     def getFbxNodeNpTransformAtFrame(self, jointName, frame, transformSpace="world"):
         """
-        Return numpy mx4 for a node within the fbx scene at a specificed time.
+        Return numpy mx4 for a node within the fbx Scene at a specificed time.
         """
         if transformSpace=="world":
             return self.getGlobalTransform(jointName, frame)
         elif transformSpace=="local":
-            print "This doesn't work with local yet."
+            print ("This doesn't work with local yet.")
         else:
-            print "Need to specify 'world' or 'local'."
+            print ("Need to specify 'world' or 'local'.")
 
 
     def getNpGlobalTransform(self, jointName, time=0):
@@ -186,20 +177,20 @@ class viveScene(scene):
 
     def destroy(self):
         if not self.needsInitializing:
-            print 'Destroy: ' + self.title
+            print ('Destroy: ' + self.title)
             #self.lSdkManager.Destroy()
         self.needsInitializing = True
 
-class fbxScene(scene):
+class fbxScene(Scene):
     """
-    Library to work with an fbx scene (a .fbx file).
+    Library to work with an fbx Scene (a .fbx file).
     """
     def __init__(self, fileName):
         super(fbxScene, self).__init__(fileName)
 
     def initialize(self):
         if self.needsInitializing:
-            print "Initializing: %s"%(self.fileName)
+            print ("Initializing: %s"%(self.fileName))
             self.time        = FbxTime()
             self.lSdkManager, self.lScene   = InitializeSdkObjects()
             lResult                         = LoadScene(self.lSdkManager, self.lScene, self.fileName)
@@ -234,14 +225,14 @@ class fbxScene(scene):
 
     def getFbxNodeNpTransformAtFrame(self, jointName, frame, transformSpace="world"):
         """
-        Return numpy mx4 for a node within the fbx scene at a specificed time.
+        Return numpy mx4 for a node within the fbx Scene at a specificed time.
         """
         if transformSpace=="world":
             return util.fbxMxtoNumpyMx(self.getGlobalTransform(jointName, frame))
         elif transformSpace=="local":
             return util.fbxMxtoNumpyMx(self.getLocalTransform(jointName, frame))
         else:
-            print "Need to specify 'world' or 'local'."
+            print ("Need to specify 'world' or 'local'.")
 
     def getNodeIndexByName(self,jointName):
         self.initialize()
@@ -276,6 +267,6 @@ class fbxScene(scene):
 
     def destroy(self):
         if not self.needsInitializing:
-            print 'Destroy: ' + self.title
+            print ('Destroy: ' + self.title)
             self.lSdkManager.Destroy()
         self.needsInitializing = True

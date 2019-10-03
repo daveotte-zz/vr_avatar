@@ -1,7 +1,7 @@
 import os
 import re
 import numpy as np
-from PyQt4.QtOpenGL import *
+from PyQt5.QtOpenGL import *
 from OpenGL.GL import *
 import math
 
@@ -11,7 +11,7 @@ npMxType = type(np.matrix(1))
 
 
 
-class colors(object):
+class colors:
     """
     An object with color names as attributes, and values that
     correspond to RGB v3 values.

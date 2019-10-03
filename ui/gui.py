@@ -1,13 +1,11 @@
 import sys
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtOpenGL import *
+from PyQt5 import QtCore, QtGui, uic
+from PyQt5.QtOpenGL import *
 from OpenGL.GL import *
-import numpy as np
-from camera import Camera
-import re
-import lib.util as util
+from ui.camera import Camera
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
 
-class UI(QtGui.QMainWindow):
+class UI(QMainWindow):
     def __init__(self, App):
         app = QtGui.QApplication(sys.argv)
         super(UI, self).__init__()
@@ -114,13 +112,13 @@ class UI(QtGui.QMainWindow):
         self.updateForSceneChange()
 
     def keyPressEvent(self, event):
-        print "Key Pressed."
+        print ("Key Pressed.")
         if event.key() == QtCore.Qt.Key_Left or event.key() == QtCore.Qt.Key_N:
-            print "Back 1 frame."
+            print ("Back 1 frame.")
             self.timeLine.setCurrentTime(self.timeLine.currentTime()-self.timeForOneFrame)
             #self.timeLine.setValue(int(self.timeLine.currentFrame())-1)
         elif event.key() == QtCore.Qt.Key_Right or event.key() == QtCore.Qt.Key_M:
-            print "Forward 1 frame."
+            print ("Forward 1 frame.")
             self.timeLine.setCurrentTime(self.timeLine.currentTime()+self.timeForOneFrame)
 
     def setTimeLineCurrentFrame(self):
@@ -148,9 +146,9 @@ class UI(QtGui.QMainWindow):
         self.timeLine.setFrameRange(self.timeSlider.minimum(),self.timeSlider.maximum())
 
     def stopTimeline(self):
-        print "TimeLine State: %s"%(self.timeLine.state())
+        print ("TimeLine State: %s"%(self.timeLine.state()))
         if self.timeLine.state() == 2:
-            print "Stopping playback."
+            print ("Stopping playback.")
             self.timeLine.setPaused(True)
             self.playPushButton.setText("Play")
 
@@ -165,7 +163,7 @@ class UI(QtGui.QMainWindow):
     @property
     def timeLineTimeDuration(self):
         """
-        Return scene duration in milliseconds.
+        Return Scene duration in milliseconds.
         """
         return self.timeLineNumberOfFrames/self.fps*1000
 
@@ -192,7 +190,7 @@ class UI(QtGui.QMainWindow):
             self.playPushButton.setText("Stop")
 
     def setTimeSlider(self):
-        print "current frame: %d"%(self.timeLine.currentFrame())
+        print ("current frame: %d"%(self.timeLine.currentFrame()))
         self.timeSlider.setValue(int(self.timeLine.currentFrame()))
 
     def run(self):
@@ -214,7 +212,7 @@ class UI(QtGui.QMainWindow):
             self.uiEngineName2ObjectName[engine.title] = engine.name
 
         for engineTitle in self.uiEngineName2ObjectName.keys():
-            print "Key is: %s engine name is: %s"%(engineTitle,self.uiEngineName2ObjectName[engineTitle])
+            print ("Key is: %s engine name is: %s"%(engineTitle,self.uiEngineName2ObjectName[engineTitle]))
             
     def populateSceneList(self):
         """
@@ -331,7 +329,7 @@ class UI(QtGui.QMainWindow):
             item = selectedItems[0]
         else:
             item = self.sceneList.item(0)
-        print "Scene is now: %s"%str(item.text())
+        print ("Scene is now: %s"%str(item.text()))
         sceneName = self.uiSceneName2ObjectName[str(item.text())]
         return sceneName
 
@@ -400,7 +398,7 @@ class Viewer3DWidget(QGLWidget):
         glFlush()
 
     def resizeGL(self, widthInPixels, heightInPixels):
-        print "Resize being called."
+        print ("Resize being called.")
         self.camera.setViewportDimensions(widthInPixels, heightInPixels)
         glViewport(0, 0, widthInPixels, heightInPixels)
 
@@ -426,14 +424,14 @@ class Viewer3DWidget(QGLWidget):
         self.oldy = mouseEvent.y()
 
     def mouseDoubleClickEvent(self, mouseEvent):
-        print "double click"
+        print ("double click")
 
     def mousePressEvent(self, e):
-        print "mouse press"
+        print ("mouse press")
         self.isPressed = True
 
     def mouseReleaseEvent(self, e):
-        print "mouse release"
+        print ("mouse release")
         self.isPressed = False
 
     def drawSkeleton(self):

@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from MyGeom import Point3D, Vector3D, Matrix4x4
+from ui.MyGeom import Point3D, Vector3D, Matrix4x4
 from OpenGL.GL import *
 import math
 
@@ -14,7 +14,7 @@ class Camera:
         self.farPlane = 10000.0
 
         # During dollying (i.e. when the camera is translating into
-        # the scene), if the camera gets too close to the target
+        # the Scene), if the camera gets too close to the target
         # point, we push the target point away.
         # The threshold distance at which such "pushing" of the
         # target point begins is this fraction of nearPlane.
@@ -105,7 +105,7 @@ class Camera:
         self.up = M * self.up
         self.position = self.target + t2p
 
-    # This causes the scene to appear to translate right and up
+    # This causes the Scene to appear to translate right and up
     # (i.e., what really happens is the camera is translated left and down).
     # This is also called "panning" in some software packages.
     # Passing in negative delta values causes the opposite motion.
@@ -124,7 +124,7 @@ class Camera:
         self.position = self.position + translation
         self.target = self.target + translation
 
-    # This causes the camera to translate forward into the scene.
+    # This causes the camera to translate forward into the Scene.
     # This is also called "dollying" or "tracking" in some software packages.
     # Passing in a negative delta causes the opposite motion.
     # If ``pushTarget'' is True, the point of interest translates forward (or backward)

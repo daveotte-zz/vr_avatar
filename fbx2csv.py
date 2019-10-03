@@ -5,7 +5,7 @@ import lib.util as util
 
 '''
 bring in stuff to make an nnConfig object, and then make it
-bring in the scene.py to make a scene object(s)
+bring in the Scene.py to make a Scene object(s)
 bring in engine.py, instantiate an engine, and then extract stuff 
 '''
 

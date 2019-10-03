@@ -1,23 +1,15 @@
 
 
-import sys
-#from data import datamanafbxManager, nnConfigDataManager, engine, transformsFilesManager
 from keras.models import Sequential
-from keras.models import model_from_json
 from keras.layers import Dense
 import keras.optimizers
 import numpy as np
-from keras.layers.normalization import BatchNormalization
-from ui import gui
-from PyQt4 import QtGui
-import os
-from path import Path
 import random
 from shutil import copyfile
 import lib.util as util
 import json
 
-class NN(object):
+class NN:
     def __init__(self,engine):
         self.engine = engine
         self.name = self.engine.name
@@ -26,31 +18,30 @@ class NN(object):
         #self.engine.write()
         if not self.engine.data:
             self.engine.setData()
-        print "inputStart: %d, inputEnd: %d, outputStart: %d, outputEnd: %d" % \
+        print ("inputStart: %d, inputEnd: %d, outputStart: %d, outputEnd: %d" % \
                                     (self.engine.inputStart,
                                      self.engine.inputEnd,  
                                      self.engine.outputStart,
-                                     self.engine.outputEnd)
+                                     self.engine.outputEnd))
         
         inputData, outputData = self.data()
         model = self.model()
 
         dataMeanList, dataStdevList = util.getMeanAndStdev(inputData)
 
-        model.fit(util.normalizeData(inputData,dataMeanList,dataStdevList) ,outputData,\
-                                     epochs=self.engine.nnConfig.epochs, batch_size=50)
+        model.fit(util.normalizeData(inputData,dataMeanList,dataStdevList) ,outputData, epochs=self.engine.nnConfig.epochs, batch_size=50)
         self.write(model,dataMeanList,dataStdevList)
 
     def write(self,model,dataMeanList,dataStdevList):
         writeDir = self.engine.nnConfig.writeWeightsFile.dirname()
         if not writeDir.isdir():
-            print "Making log dir: %s"%(writeDir)
+            print ("Making log dir: %s"%(writeDir))
             writeDir.makedirs()
 
-        print "Writing: %s"%(self.engine.nnConfig.writeWeightsFile)
+        print ("Writing: %s"%(self.engine.nnConfig.writeWeightsFile))
         model.save_weights(self.engine.nnConfig.writeWeightsFile)
  
-        print "Writing: %s"%(self.engine.nnConfig.writeNnFile)
+        print ("Writing: %s"%(self.engine.nnConfig.writeNnFile))
         jsonFile = open(self.engine.nnConfig.writeNnFile,'w')
         jsonFile.write(model.to_json())
         jsonFile.close()
@@ -64,15 +55,15 @@ class NN(object):
         with open(self.engine.nnConfig.writeNnFile,'w') as outfile:
             json.dump(jsonNodes,outfile)
 
-        print "Copying config: %s"%self.engine.nnConfig.configFile
+        print ("Copying config: %s"%self.engine.nnConfig.configFile)
         copyfile(self.engine.nnConfig.configFile, self.engine.nnConfig.writeConfigFile)
 
-        print "Copying operations.py: %s"%self.engine.nnConfig.operationsFile
+        print ("Copying operations.py: %s"%self.engine.nnConfig.operationsFile)
         copyfile(self.engine.nnConfig.operationsFile, self.engine.nnConfig.writeOperationsFile)
 
-        print "Ticking up the write/read paths."
+        print ("Ticking up the write/read paths.")
         self.engine.nnConfig.setUpLoadPaths()
-        print "Reloading NN models."
+        print ("Reloading NN models.")
         self.engine.loadModel()
 
     def data(self):

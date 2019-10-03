@@ -1,15 +1,13 @@
 import numpy as np
 import lib.util as util
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtOpenGL import *
+from PyQt5.QtOpenGL import *
 from OpenGL.GL import *
 import copy
 from rig.joints import *
-from keras.models import Sequential
 from keras.models import model_from_json
 import json
 
-class operation(object):
+class operation:
     def __init__(self):
         self.inputArray =  []
         self.outputArray = []
@@ -55,7 +53,7 @@ class operation(object):
 
     def updateModel(self):
         if self.modelJsonFile.isfile() and self.modelWeightsFile.isfile():
-            print "Loading model: %s and %s"%(self.modelJsonFile, self.modelWeightsFile)
+            print ("Loading model: %s and %s"%(self.modelJsonFile, self.modelWeightsFile))
             jsonFile = open(self.modelJsonFile,'r')
             jsonString = jsonFile.read().replace('\n', '')
             model = model_from_json(jsonString)
@@ -74,9 +72,9 @@ class operation(object):
         """
         An instance of this class 'operation' will store self.frames worth
         of input data. When processing of extracted transforms 
-        switches to a new scene (animation clip), we need to start over to avoid
+        switches to a new Scene (animation clip), we need to start over to avoid
         discontinuity over the stored frames. This method gets called
-        when operation is used to extract transform on a new scene.
+        when operation is used to extract transform on a new Scene.
         """
         self.inputArray = []
 
@@ -177,7 +175,7 @@ class operation(object):
         self.updatePredicted(self.model.predict_on_batch(inputData)[0])
 
     def drawExtracted(self,transformScale):
-        print "Drawing Extracted--------------------------"
+        print ("Drawing Extracted--------------------------")
         util.drawMxs(self.extractedTransforms,transformScale)
         util.drawPoints(self.extractedPositions,9,util.color.magenta)
 
@@ -209,9 +207,9 @@ class operation(object):
         self.oldPoseDiff = copy.deepcopy(self.curPoseDiff)
         self.curPoseDiff = self.posDiff/len(self.predictedTransforms)
         self.avgPosediff = (self.oldPoseDiff + self.curPoseDiff)/2
-        print "---"
-        print "currPoseDiff: " + str(self.curPoseDiff)
-        print "avgPosediff: " + str(self.avgPosediff)
+        print ("---")
+        print ("currPoseDiff: " + str(self.curPoseDiff))
+        print ("avgPosediff: " + str(self.avgPosediff))
 
 
 ###
@@ -369,7 +367,7 @@ class predictNPosRot(operation):
             self.predictedTransforms = []
             self.predictedPositions = []
             for i in range(self.transformCount):
-                #print "this is my index: %d"%(i)
+                #print ("this is my index: %d"%(i)
                 ###
                 ### turn the huge output array into prediction transforms
 
